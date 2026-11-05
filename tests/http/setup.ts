@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { rmSync } from 'node:fs';
+import { mkdirSync, rmSync } from 'node:fs';
 
 export const PORT = 4398;
 export const ORIGIN = `http://localhost:${PORT}`;
@@ -9,6 +9,8 @@ export const DB_FILE = '.data/test-http.db';
 
 /** Starts the built server against a throwaway database, on its own port. */
 export default async function setup() {
+  // A fresh checkout has no .data folder, and the tests open this database before the server starts on it.
+  mkdirSync('.data', { recursive: true });
   for (const suffix of ['', '-wal', '-shm', '-journal', '-info']) rmSync(`${DB_FILE}${suffix}`, { force: true });
 
   const server = spawn(process.execPath, ['scripts/start-local.mjs'], {
