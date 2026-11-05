@@ -13,10 +13,19 @@ repoUrl: https://github.com/Parth3557/brain-cancer-detection
 isPrivate: false
 featured: false
 order: 6
-problem: "TODO: describe the problem"
-approach: "TODO: describe the approach"
+problem: Classify brain tumor types from uploaded MRI images, inside a complete
+  web application.
+approach: A ResNet-style CNN built from scratch in PyTorch does the
+  classification. A Flask app wraps it with accounts, prediction history, an
+  admin dashboard and Gemini summaries. This was a team project.
 coverImage: /images/projects/neuroscan-brain-tumor-mri-classifier/coverImage.webp
 coverDiagram: none
 coverAlt: NeuroScan showing an uploaded brain MRI and its predicted tumor class
   with a confidence score.
 coverCredit: ""
+pipeline:
+  - MRI upload
+  - ResNet-style CNN
+  - Tumor class
+  - Gemini summary
+  - History and admin dashboard

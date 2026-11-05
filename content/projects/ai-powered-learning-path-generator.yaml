@@ -20,10 +20,24 @@ repoUrl: https://github.com/Parth3557/ai-learning-path-generator
 isPrivate: false
 featured: true
 order: 2
-problem: "TODO: describe the problem"
-approach: "TODO: describe the approach"
+problem: LLM-only learning tools can invent courses and ignore the order topics
+  should be learned in. This platform builds a personalized roadmap a student
+  can trust.
+approach: Each roadmap is grounded in a curated course database and a
+  prerequisite graph. A knowledge graph of courses and modules is built from
+  MySQL with exact matching and Gemini ontology extraction, and a topological
+  traversal puts prerequisites first. Course content is embedded and stored in
+  ChromaDB for retrieval. Every recommended step comes with a plain-language
+  reason, and those explanations are cached so repeat requests skip the LLM
+  call.
 coverImage: /images/projects/ai-powered-learning-path-generator/coverImage.webp
 coverDiagram: none
 coverAlt: The Learning Path Generator's Machine Learning roadmap, with an AI
   explanation open under its first module.
 coverCredit: ""
+pipeline:
+  - Courses in MySQL
+  - Knowledge graph
+  - DAG ordering
+  - RAG over ChromaDB
+  - Roadmap with reasons

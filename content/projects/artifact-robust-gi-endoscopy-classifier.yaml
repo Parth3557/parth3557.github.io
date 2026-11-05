@@ -16,10 +16,20 @@ repoUrl: ""
 isPrivate: true
 featured: false
 order: 4
-problem: "TODO: describe the problem"
-approach: "TODO: describe the approach"
+problem: An endoscopy classifier can score well by learning shortcuts, such as
+  image artifacts and borders, instead of the tissue itself.
+approach: "A FastViT-SA24 model is trained with GRL and DFR, and has to pass six
+  release gates against shortcut learning. To check the result, the model is
+  scored on tissue alone and on the border alone: a robust model should stay
+  accurate on tissue and fall to about chance on the border."
 coverImage: /images/projects/artifact-robust-gi-endoscopy-classifier/coverImage.webp
 coverDiagram: none
 coverAlt: The GI endoscopy dashboard classifying a test image as a polyp, with
   class probabilities and the circular tissue crop the model sees.
 coverCredit: "Sample image: HyperKvasir, CC BY 4.0"
+pipeline:
+  - Endoscopy images
+  - FastViT-SA24
+  - GRL and DFR
+  - Six release gates
+  - Robustness checks

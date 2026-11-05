@@ -12,7 +12,37 @@ export function isHttpsUrl(value: string): boolean {
   }
 }
 
+/** A link in the content can go to one of our own pages or to a normal https page. */
+export function isSafeHref(value: string): boolean {
+  return /^\/(?![/\\])/.test(value) || isHttpsUrl(value);
+}
+
+export const CATEGORIES = [
+  { value: 'genai', label: 'GenAI / RAG' },
+  { value: 'vision', label: 'Computer Vision' },
+  { value: 'research', label: 'Research' },
+  { value: 'android', label: 'Android' },
+] as const;
+
+export function categoriesWithCounts(projects: ReadonlyArray<{ category: string }>) {
+  return CATEGORIES
+    .map((category) => ({ ...category, count: projects.filter((project) => project.category === category.value).length }))
+    .filter((category) => category.count > 0);
+}
+
+/** The items on either side, wrapping around, so the last project still leads somewhere. */
+export function neighbours<T extends { slug: string }>(items: readonly T[], slug: string): { previous: T | null; next: T | null } {
+  const at = items.findIndex((item) => item.slug === slug);
+  if (at === -1 || items.length < 2) return { previous: null, next: null };
+  return { previous: items[(at - 1 + items.length) % items.length], next: items[(at + 1) % items.length] };
+}
+
 const isTodo = (value: unknown) => typeof value === 'string' && /^\s*TODO\b/.test(value);
+
+/** Real text, or nothing. A TODO placeholder must never reach a public page. */
+export function published(value: string): string {
+  return isTodo(value) || !value.trim() ? '' : value;
+}
 
 /** The names of fields still holding a TODO placeholder. */
 export function findTodoFields(data: Record<string, unknown>): string[] {

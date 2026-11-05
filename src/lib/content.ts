@@ -4,7 +4,7 @@
  */
 import { z } from 'astro/zod';
 import { parse } from 'yaml';
-import { byOrder, findTodoFields, isHttpsUrl, publicRepoUrl } from './content-rules';
+import { byOrder, CATEGORIES, findTodoFields, isHttpsUrl, isSafeHref, publicRepoUrl } from './content-rules';
 
 const files = import.meta.glob<string>('/content/**/*.yaml', { eager: true, query: '?raw', import: 'default' });
 
@@ -70,6 +70,25 @@ export const home = single('home', z.object({
   footerNote: text,
 }));
 
+const heading = z.string().min(1);
+
+export const pages = single('pages', z.object({
+  aboutHeading: heading,
+  valuesHeading: heading,
+  courtHeading: heading,
+  educationHeading: heading,
+  certificationsHeading: heading,
+  experienceHeading: heading,
+  workHeading: heading,
+  achievementsHeading: heading,
+  skillsHeading: heading,
+  problemHeading: heading,
+  approachHeading: heading,
+  pipelineHeading: heading,
+  resultsHeading: heading,
+  techHeading: heading,
+}));
+
 export const about = single('about', z.object({ story: text, values: list, badminton: text }));
 
 export const theme = single('theme', z.object({ heavyAnimations: flag }));
@@ -81,9 +100,10 @@ export const projects = byOrder(collection('projects', z.object({
   summary: text,
   problem: text,
   approach: text,
+  pipeline: list,
   results: list,
   tech: list,
-  category: z.enum(['genai', 'vision', 'research', 'android']),
+  category: z.enum(CATEGORIES.map((category) => category.value)),
   repoUrl: text,
   isPrivate: flag,
   featured: flag,
@@ -107,6 +127,8 @@ export const journey = byOrder(collection('journey', z.object({
   metric: text,
   metricFrom: z.number().nullish().transform((value) => value ?? null),
   metricLabel: text,
+  linkHref: text.refine((value) => !value || isSafeHref(value), 'Must be a page on this site or an https link'),
+  linkLabel: text,
 })));
 export const journeyOnHome = journey.filter((stop) => stop.showOnHome);
 

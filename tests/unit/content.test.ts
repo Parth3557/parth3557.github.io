@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
-import { achievements, contentTodos, heroAchievement, home, journeyOnHome, profile, projects, skills } from '../../src/lib/content';
-import { isHttpsUrl } from '../../src/lib/content-rules';
+import { achievements, contentTodos, heroAchievement, home, journey, journeyOnHome, pages, profile, projects, skills } from '../../src/lib/content';
+import { isHttpsUrl, published } from '../../src/lib/content-rules';
 
 const contentFiles = (dir: string): string[] =>
   readdirSync(dir).flatMap((name) => {
@@ -48,6 +48,36 @@ describe('the seeded content', () => {
     expect(profile.githubUrl).toBe('https://github.com/Parth3557');
     expect(profile.linkedinUrl).toMatch(/^https:\/\/www\.linkedin\.com\/in\/parth3557\/?$/);
     expect(home.contactHeading).toBe("What's next?");
+  });
+
+  test('every project has a problem, an approach and a pipeline, with no placeholder left', () => {
+    for (const project of projects) {
+      expect(published(project.problem), project.slug).not.toBe('');
+      expect(published(project.approach), project.slug).not.toBe('');
+      expect(project.pipeline.length, project.slug).toBeGreaterThan(1);
+    }
+  });
+
+  test('project descriptions add no numbers beyond the brief', () => {
+    // Figures belong in the results, which come from the brief. Only names with digits in them may appear here.
+    const names = /\b(Amazon ML Challenge 2025|A1|C2|EfficientNet-B0|ResNet50V2|FastViT-SA24|all-MiniLM-L6-v2|Qwen2\.5-7B)\b/g;
+    for (const project of projects) {
+      const words = [project.problem, project.approach, ...project.pipeline].join(' ').replace(names, '');
+      expect(words, project.slug).not.toMatch(/\d/);
+    }
+  });
+
+  test('all page headings are filled in, and they ask questions', () => {
+    for (const [key, heading] of Object.entries(pages)) {
+      expect(heading, key).toMatch(/\?$/);
+    }
+  });
+
+  test('the last journey stop leads somewhere safe', () => {
+    const last = journey[journey.length - 1];
+    expect(last.slug).toBe('whats-next');
+    expect(last.linkHref).toBe('/contact');
+    expect(last.linkLabel).not.toBe('');
   });
 
   test('the public resume and its preview exist', () => {

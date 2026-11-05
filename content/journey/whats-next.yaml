@@ -10,3 +10,5 @@ smash: false
 metric: ""
 metricFrom: null
 metricLabel: ""
+linkHref: /contact
+linkLabel: Get in touch

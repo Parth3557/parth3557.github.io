@@ -13,9 +13,19 @@ repoUrl: https://github.com/Parth3557/english-coach-android
 isPrivate: false
 featured: false
 order: 8
-problem: "TODO: describe the problem"
-approach: "TODO: describe the approach"
+problem: A personal English course for intermediate learners on Android, with no
+  accounts, ads or paywalls, and lessons that work offline.
+approach: A Kotlin app based on the MIT-licensed Kotoba, rebuilt as a
+  single-language English edition. A guided A1–C2 path pairs vocabulary with
+  grammar, and reviews use spaced repetition. The Speaking Coach scores reading
+  aloud offline with the on-device Vosk speech model, and its spoken
+  conversations use Google's Gemini API with a key the learner creates.
 coverImage: /images/projects/english-coach/coverImage.webp
 coverDiagram: none
 coverAlt: Home, Learn and Grammar screens from the English Coach Android app.
 coverCredit: ""
+pipeline:
+  - Guided A1–C2 path
+  - Exercises
+  - Spaced-repetition reviews
+  - Speaking Coach

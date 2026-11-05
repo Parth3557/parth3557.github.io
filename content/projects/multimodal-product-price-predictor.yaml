@@ -16,11 +16,22 @@ repoUrl: https://github.com/Parth3557/multimodal-price-predictor
 isPrivate: false
 featured: true
 order: 1
-problem: "TODO: describe the problem"
-approach: "TODO: describe the approach"
+problem: Predict an e-commerce product's price from its catalog text and its
+  product image, for the Amazon ML Challenge 2025.
+approach: "Two encoders run in parallel: BERT reads the catalog text, and a
+  Vision Transformer reads the image, where self-attention across image patches
+  picks up global cues such as packaging and brand. A fusion head combines them
+  and predicts the log of the price, which handles the skewed price
+  distribution. Training uses SMAPE, the challenge's own metric, as the loss,
+  with AdamW and a cosine learning-rate schedule."
 coverImage: null
 coverDiagram: multimodal
 coverAlt: Architecture diagram. Product text goes through BERT and the product
   image through a Vision Transformer. A fusion head combines them to predict the
   price.
 coverCredit: ""
+pipeline:
+  - Catalog text and product image
+  - BERT and ViT encoders
+  - Fusion head
+  - Predicted price

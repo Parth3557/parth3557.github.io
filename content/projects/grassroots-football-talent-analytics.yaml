@@ -17,10 +17,20 @@ repoUrl: ""
 isPrivate: true
 featured: false
 order: 5
-problem: "TODO: describe the problem"
-approach: "TODO: describe the approach"
+problem: Turn plain, low-cost match video into player profiles for grassroots football.
+approach: YOLO detects the players, and BoT-SORT, ByteTrack and Deep-EIoU track
+  them through the video. Pitch calibration places them on the pitch, and RTS
+  smoothing cleans up the kinematics before they become player profiles. A Flask
+  demo shows the result.
 coverImage: /images/projects/grassroots-football-talent-analytics/coverImage.webp
 coverDiagram: none
 coverAlt: The football analytics prototype showing a processed match video with
   tracked players, team colours and a live minimap of the pitch.
 coverCredit: "Footage: SoccerTrack-v2, CC BY 4.0"
+pipeline:
+  - Match video
+  - YOLO detection
+  - Player tracking
+  - Pitch calibration
+  - RTS-smoothed kinematics
+  - Player profiles

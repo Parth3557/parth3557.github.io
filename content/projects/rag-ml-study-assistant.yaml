@@ -17,10 +17,23 @@ repoUrl: https://github.com/Parth3557/RAG
 isPrivate: false
 featured: true
 order: 3
-problem: "TODO: describe the problem"
-approach: "TODO: describe the approach"
+problem: Answer questions about machine learning using your own textbooks as the
+  source, and show which page each answer came from.
+approach: PDFs are read with PyMuPDF, falling back to Tesseract OCR for scanned
+  or image-heavy pages. Text chunks are embedded with all-MiniLM-L6-v2 and
+  indexed in FAISS. For each question, the closest passages are retrieved and
+  passed to Qwen2.5-7B through the Hugging Face Inference API, so the answer
+  stays grounded in that text. The source file, page number and relevance score
+  are shown beside it.
 coverImage: /images/projects/rag-ml-study-assistant/coverImage.webp
 coverDiagram: none
 coverAlt: The ML Study Assistant showing three cited sources with page numbers
   and scores, then refusing an off-topic question about baking a cake.
 coverCredit: ""
+pipeline:
+  - Textbook PDFs
+  - PyMuPDF and Tesseract OCR
+  - MiniLM embeddings
+  - FAISS search
+  - Qwen2.5-7B
+  - Answer with page citations

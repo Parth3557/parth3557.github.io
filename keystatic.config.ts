@@ -1,4 +1,5 @@
 import { collection, config, fields, singleton } from '@keystatic/core';
+import { CATEGORIES } from './src/lib/content-rules';
 
 const order = fields.integer({ label: 'Order', description: 'Lower numbers come first.', defaultValue: 1 });
 
@@ -53,6 +54,26 @@ export default config({
         footerNote: fields.text({ label: 'Footer note' }),
       },
     }),
+    pages: singleton({
+      label: 'Page headings',
+      path: 'content/pages',
+      schema: {
+        aboutHeading: fields.text({ label: 'About: page heading' }),
+        valuesHeading: fields.text({ label: 'About: values' }),
+        courtHeading: fields.text({ label: 'About: lessons from the court' }),
+        educationHeading: fields.text({ label: 'About: education' }),
+        certificationsHeading: fields.text({ label: 'About: certifications' }),
+        experienceHeading: fields.text({ label: 'Experience: page heading' }),
+        workHeading: fields.text({ label: 'Experience: work' }),
+        achievementsHeading: fields.text({ label: 'Experience: achievements' }),
+        skillsHeading: fields.text({ label: 'Experience: skills' }),
+        problemHeading: fields.text({ label: 'Project page: problem' }),
+        approachHeading: fields.text({ label: 'Project page: approach' }),
+        pipelineHeading: fields.text({ label: 'Project page: pipeline' }),
+        resultsHeading: fields.text({ label: 'Project page: results' }),
+        techHeading: fields.text({ label: 'Project page: tech' }),
+      },
+    }),
     about: singleton({
       label: 'About page',
       path: 'content/about',
@@ -82,16 +103,16 @@ export default config({
         summary: fields.text({ label: 'Summary', multiline: true }),
         problem: fields.text({ label: 'Problem', multiline: true }),
         approach: fields.text({ label: 'Approach', multiline: true }),
+        pipeline: fields.array(fields.text({ label: 'Step' }), {
+          label: 'Pipeline',
+          description: 'The steps from input to output, drawn as a diagram on the project page.',
+          itemLabel: (props) => props.value,
+        }),
         results: fields.array(fields.text({ label: 'Result' }), { label: 'Results', itemLabel: (props) => props.value }),
         tech: fields.array(fields.text({ label: 'Technology' }), { label: 'Tech', itemLabel: (props) => props.value }),
         category: fields.select({
           label: 'Category',
-          options: [
-            { label: 'GenAI / RAG', value: 'genai' },
-            { label: 'Computer Vision', value: 'vision' },
-            { label: 'Research', value: 'research' },
-            { label: 'Android', value: 'android' },
-          ],
+          options: CATEGORIES.map(({ label, value }) => ({ label, value })),
           defaultValue: 'genai',
         }),
         repoUrl: fields.url({ label: 'Repository', description: 'Never shown for a private project.' }),
@@ -130,6 +151,8 @@ export default config({
         metric: fields.text({ label: 'Rank' }),
         metricFrom: fields.integer({ label: 'Rank starts falling from' }),
         metricLabel: fields.text({ label: 'Rank caption' }),
+        linkHref: fields.text({ label: 'Link', description: 'A page on this site, like /contact, or an https address.' }),
+        linkLabel: fields.text({ label: 'Link text' }),
       },
     }),
     achievements: collection({

@@ -17,10 +17,19 @@ repoUrl: https://github.com/Parth3557/plant-growth-stage-classifier
 isPrivate: false
 featured: false
 order: 7
-problem: "TODO: describe the problem"
-approach: "TODO: describe the approach"
+problem: Detect a plant's growth stage from a photo, and compare how three deep
+  learning architectures handle the same task.
+approach: EfficientNet-B0, a Vision Transformer and ResNet50V2 sit side by side
+  in one Flask app packaged with Docker. Upload a plant image and get a
+  classification with a confidence breakdown. EfficientNet and ViT run in
+  PyTorch, ResNet50V2 runs in TensorFlow, and the models load only when needed
+  to save memory.
 coverImage: /images/projects/plant-growth-stage-classifier/coverImage.webp
 coverDiagram: none
 coverAlt: The Plant Growth Stage Classifier labelling a pomegranate photo as
   mature, with a confidence bar for every growth stage.
 coverCredit: ""
+pipeline:
+  - Plant photo
+  - EfficientNet-B0, ViT or ResNet50V2
+  - Growth stage with confidence
