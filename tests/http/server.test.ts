@@ -600,10 +600,11 @@ describe('the public site', () => {
   });
 
   test('loads nothing from another site', () => {
-    const urls = [...home.matchAll(/(?:src|href)="(https?:[^"]+)"/g)].map((match) => match[1]);
-    const loaded = [...home.matchAll(/<(?:script|link|img)\b[^>]*(?:src|href)="(https?:[^"]+)"/g)].map((match) => match[1]);
-    expect(loaded.filter((url) => !url.startsWith(ORIGIN) && !url.startsWith('http://localhost'))).toEqual([]);
-    expect(urls.length).toBeGreaterThan(0);
+    // A canonical link only names this page's address. Nothing is fetched from it.
+    const tags = [...home.matchAll(/<(?:script|link|img)\b[^>]*>/g)].map((match) => match[0]).filter((tag) => !tag.includes('rel="canonical"'));
+    const loaded = tags.flatMap((tag) => [...tag.matchAll(/(?:src|href)="(https?:[^"]+)"/g)].map((match) => match[1]));
+    expect(loaded).toEqual([]);
+    expect(tags.length).toBeGreaterThan(5);
   });
 
   test('never links to the dashboard', () => {
