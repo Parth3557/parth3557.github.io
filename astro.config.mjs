@@ -7,13 +7,14 @@ import { defineConfig } from 'astro/config';
 
 const onVercel = Boolean(process.env.VERCEL);
 if (onVercel && !process.env.SITE_ORIGIN) throw new Error('Set SITE_ORIGIN in the Vercel project settings.');
-const site = process.env.SITE_ORIGIN ?? 'http://localhost:4321';
-const { protocol, hostname } = new URL(site);
+const appOrigin = process.env.SITE_ORIGIN ?? 'http://localhost:4321';
+const { protocol, hostname } = new URL(appOrigin);
 
 // The Keystatic integration isn't used, because its page relies on inline scripts that the Content
 // Security Policy forbids. src/pages/keystatic and src/pages/api/keystatic mount the same editor.
 export default defineConfig({
-  site,
+  // Canonical links and the sitemap name the public pages' address, which can differ from the app's.
+  site: process.env.PUBLIC_SITE_ORIGIN || appOrigin,
   output: 'static',
   adapter: onVercel ? vercel() : node({ mode: 'standalone' }),
   integrations: [

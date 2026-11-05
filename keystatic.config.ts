@@ -5,7 +5,7 @@ const order = fields.integer({ label: 'Order', description: 'Lower numbers come 
 
 export default config({
   storage: import.meta.env.PUBLIC_KEYSTATIC_GITHUB === 'true'
-    ? { kind: 'github', repo: { owner: 'Parth3557', name: 'portfolio' } }
+    ? { kind: 'github', repo: { owner: 'Parth3557', name: 'parth3557.github.io' } }
     : { kind: 'local' },
   ui: { brand: { name: 'Portfolio content' } },
   singletons: {

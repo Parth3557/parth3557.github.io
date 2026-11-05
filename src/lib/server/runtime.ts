@@ -12,6 +12,12 @@ export function siteOrigin(): string {
   return new URL(value).origin;
 }
 
+/** Where the public pages live. GitHub Pages can't run this app, so that can differ from its address. */
+export function publicSiteOrigin(): string {
+  const value = process.env.PUBLIC_SITE_ORIGIN;
+  return value ? new URL(value).origin : siteOrigin();
+}
+
 let connection: Promise<Client> | undefined;
 
 async function connect(): Promise<Client> {

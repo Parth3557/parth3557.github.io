@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { isEditorPath, isGatedPath, isPublicAuthPath, originAllowed, securityHeaders, sessionCookie } from '../../src/lib/server/guards';
+import { collectCorsHeaders, isEditorPath, isGatedPath, isPublicAuthPath, originAllowed, securityHeaders, sessionCookie, writeAllowed } from '../../src/lib/server/guards';
 
 describe('isEditorPath', () => {
   test.each(['/keystatic', '/keystatic/collection/projects', '/%6beystatic', '/api/keystatic/update', '/API/KEYSTATIC/x'])('%s is the editor', (path) => {
@@ -68,6 +68,65 @@ describe('originAllowed: exact match only', () => {
     'https://PARTH3557.vercel.app.evil.example',
   ])('rejects %s', (origin) => {
     expect(originAllowed(origin, site)).toBe(false);
+  });
+});
+
+describe('writeAllowed: the public pages can live elsewhere, and may only send visits', () => {
+  const app = 'https://parth3557.vercel.app';
+  const pages = 'https://parth3557.github.io';
+
+  test.each(['/api/collect', '/api/auth/logout', '/api/dashboard/passkeys/remove', '/api/keystatic/update'])('the app itself may write to %s', (path) => {
+    expect(writeAllowed(path, app, app, pages)).toBe(true);
+  });
+
+  test('the public pages may send a visit', () => {
+    expect(writeAllowed('/api/collect', pages, app, pages)).toBe(true);
+  });
+
+  test.each([
+    '/api/auth/logout',
+    '/api/auth/login/options',
+    '/api/auth/login/verify',
+    '/api/auth/register/options',
+    '/api/auth/register/verify',
+    '/api/dashboard/passkeys/remove',
+    '/api/keystatic/update',
+    '/dashboard',
+    '/api/collect/',
+    '/API/collect',
+    '/api/%63ollect',
+    '/api/collect/../auth/logout',
+  ])('the public pages may not write to %s', (path) => {
+    expect(writeAllowed(path, pages, app, pages)).toBe(false);
+  });
+
+  test.each([
+    null,
+    '',
+    'null',
+    'https://evil.example',
+    'https://parth3557.github.io.evil.example',
+    'http://parth3557.github.io',
+    'https://parth3557.github.io:8443',
+    'https://other-person.github.io',
+  ])('%s may not send a visit', (origin) => {
+    expect(writeAllowed('/api/collect', origin, app, pages)).toBe(false);
+  });
+});
+
+describe('collectCorsHeaders', () => {
+  const pages = 'https://parth3557.github.io';
+
+  test('names the public pages exactly when they ask', () => {
+    expect(collectCorsHeaders(pages, pages)).toEqual({ 'Access-Control-Allow-Origin': pages, Vary: 'Origin' });
+  });
+
+  test.each([null, '', 'null', 'https://evil.example', `${pages}.evil.example`, 'http://parth3557.github.io'])('gives %s no permission', (origin) => {
+    expect(collectCorsHeaders(origin, pages)).toEqual({ Vary: 'Origin' });
+  });
+
+  test('never allows credentials', () => {
+    expect(Object.keys(collectCorsHeaders(pages, pages)).join()).not.toMatch(/credentials/i);
   });
 });
 

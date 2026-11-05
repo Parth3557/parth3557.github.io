@@ -3,6 +3,8 @@ import { rmSync } from 'node:fs';
 
 export const PORT = 4398;
 export const ORIGIN = `http://localhost:${PORT}`;
+/** Stands in for GitHub Pages, where the public pages live on a different address from the app. */
+export const PUBLIC_ORIGIN = 'https://pages.example';
 export const DB_FILE = '.data/test-http.db';
 
 /** Starts the built server against a throwaway database, on its own port. */
@@ -10,7 +12,7 @@ export default async function setup() {
   for (const suffix of ['', '-wal', '-shm', '-journal', '-info']) rmSync(`${DB_FILE}${suffix}`, { force: true });
 
   const server = spawn(process.execPath, ['scripts/start-local.mjs'], {
-    env: { ...process.env, PORT: String(PORT), SITE_ORIGIN: ORIGIN, TURSO_DATABASE_URL: `file:${DB_FILE}` },
+    env: { ...process.env, PORT: String(PORT), SITE_ORIGIN: ORIGIN, PUBLIC_SITE_ORIGIN: PUBLIC_ORIGIN, TURSO_DATABASE_URL: `file:${DB_FILE}` },
     stdio: ['ignore', 'pipe', 'inherit'],
   });
   await new Promise<void>((resolve, reject) => {

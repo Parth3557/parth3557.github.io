@@ -8,7 +8,7 @@ import { issueSetupToken, saveCredential, setupTokenValid } from '../../src/lib/
 import { SCHEMA } from '../../src/lib/server/schema.mjs';
 import { createSession, FRESH_MS, readSession } from '../../src/lib/server/sessions';
 import { dayKey } from '../../src/lib/server/visits';
-import { DB_FILE, ORIGIN, PORT } from './setup';
+import { DB_FILE, ORIGIN, PORT, PUBLIC_ORIGIN } from './setup';
 
 const db = createClient({ url: `file:${DB_FILE}` });
 const BROWSER = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
@@ -328,6 +328,11 @@ describe('removing a passkey', () => {
   });
 });
 
+test('the dashboard\'s View site link opens the public pages and marks this browser as the owner\'s', async () => {
+  const reply = await send('/dashboard', { headers: await signedIn() });
+  expect(reply.text).toContain(`href="${PUBLIC_ORIGIN}/#owner"`);
+});
+
 describe('the public visitor endpoint', () => {
   test('counts a normal visit and keeps only the referrer\'s hostname', async () => {
     const before = await viewsToday();
@@ -395,6 +400,99 @@ describe('the public visitor endpoint', () => {
 
   test('other methods are refused', async () => {
     expect((await send('/api/collect')).status).toBe(405);
+  });
+
+  describe('from the public pages, which live on another address', () => {
+    const fromPages = { origin: PUBLIC_ORIGIN, ...JSON_TYPE };
+    const asking = (origin: string) => ({ origin, 'access-control-request-method': 'POST', 'access-control-request-headers': 'content-type' });
+
+    test('a visit counts, and the browser is told it may read the reply', async () => {
+      const before = await viewsToday();
+      const reply = await send('/api/collect', { method: 'POST', headers: fromPages, body: JSON.stringify({ path: '/journey/' }) });
+      expect(reply.status).toBe(204);
+      expect(reply.headers['access-control-allow-origin']).toBe(PUBLIC_ORIGIN);
+      expect(reply.headers['access-control-allow-credentials']).toBeUndefined();
+      expect(reply.headers.vary).toContain('Origin');
+      expect(await viewsToday()).toBe(before + 1);
+    });
+
+    test('a refused visit still names the pages, so the browser can read why', async () => {
+      const reply = await send('/api/collect', { method: 'POST', headers: fromPages, body: JSON.stringify({ path: '/admin' }) });
+      expect(reply.status).toBe(400);
+      expect(reply.headers['access-control-allow-origin']).toBe(PUBLIC_ORIGIN);
+    });
+
+    test('the browser\'s advance check is answered, and counts nothing', async () => {
+      const before = await viewsToday();
+      const reply = await send('/api/collect', { method: 'OPTIONS', headers: asking(PUBLIC_ORIGIN) });
+      expect(reply.status).toBe(204);
+      expect(reply.headers['access-control-allow-origin']).toBe(PUBLIC_ORIGIN);
+      expect(reply.headers['access-control-allow-methods']).toBe('POST');
+      expect(reply.headers['access-control-allow-headers']).toBe('content-type');
+      expect(reply.headers['access-control-allow-credentials']).toBeUndefined();
+      expect(await viewsToday()).toBe(before);
+    });
+
+    test.each(['https://evil.example', `${PUBLIC_ORIGIN}.evil.example`, 'http://pages.example', 'null', ORIGIN])('the advance check gives %s no permission', async (origin) => {
+      const reply = await send('/api/collect', { method: 'OPTIONS', headers: asking(origin) });
+      expect(reply.status).toBe(403);
+      expect(reply.headers['access-control-allow-origin']).toBeUndefined();
+    });
+
+    test.each([
+      '/api/auth/logout',
+      '/api/auth/login/options',
+      '/api/auth/login/verify',
+      '/api/auth/register/options',
+      '/api/auth/register/verify',
+      '/api/dashboard/passkeys/remove',
+      '/api/keystatic/update',
+    ])('the public pages cannot POST to %s', async (path) => {
+      const reply = await send(path, { method: 'POST', headers: fromPages, body: '{}' });
+      expect(reply.status).toBe(403);
+      expect(reply.headers['access-control-allow-origin']).toBeUndefined();
+    });
+
+    test.each([
+      '/api/%61uth/logout',
+      '/%61pi/auth/logout',
+      '/api/auth/../auth/logout',
+      '/api/collect/../auth/logout',
+      '/api/collect/%2e%2e/auth/logout',
+      '/api/%64ashboard/passkeys/remove',
+      '/api/%6beystatic/update',
+      '/api/auth/register/%6fptions',
+    ])('an odd spelling of a private route, %s, is refused too', async (path) => {
+      const reply = await send(path, { method: 'POST', headers: fromPages, body: '{}' });
+      expect(reply.status).toBe(403);
+      expect(reply.headers['access-control-allow-origin']).toBeUndefined();
+    });
+
+    // These aren't the visitor route. /api/%63ollect isn't listed because it decodes to the route itself.
+    test.each(['/api/collect/', '/API/collect', '/api/collect%2f', '/api/collect%2f..%2fauth%2flogout'])('%s is not the visitor route, so it gets nothing', async (path) => {
+      const before = await viewsToday();
+      const reply = await send(path, { method: 'POST', headers: fromPages, body: JSON.stringify({ path: '/' }) });
+      expect(reply.status).toBeGreaterThanOrEqual(400);
+      expect(reply.headers['access-control-allow-origin']).toBeUndefined();
+      expect(await viewsToday()).toBe(before);
+    });
+
+    test('no other route tells the browser it may read a reply', async () => {
+      const reply = await send('/dashboard/login', { headers: { origin: PUBLIC_ORIGIN } });
+      expect(reply.headers['access-control-allow-origin']).toBeUndefined();
+    });
+
+    test('moving between the public pages is not recorded as a source of visitors', async () => {
+      await send('/api/collect', { method: 'POST', headers: fromPages, body: JSON.stringify({ path: '/about/', referrer: `${PUBLIC_ORIGIN}/journey/` }) });
+      const hosts = JSON.stringify((await db.execute('SELECT host FROM stats_referrers')).rows);
+      expect(hosts).not.toContain('pages.example');
+    });
+
+    test('Do Not Track still wins', async () => {
+      const before = await viewsToday();
+      await send('/api/collect', { method: 'POST', headers: { ...fromPages, dnt: '1' }, body: JSON.stringify({ path: '/' }) });
+      expect(await viewsToday()).toBe(before);
+    });
   });
 
   test('no address or browser string has reached the database', async () => {
@@ -583,6 +681,19 @@ describe('every public page', () => {
       expect(html()).not.toMatch(/<script(?![^>]*\bsrc=)[^>]*>/);
       expect(html()).not.toMatch(/<style\b/);
       expect(html()).not.toMatch(/\sstyle="/);
+    });
+
+    test('carries its content policy in the page, because GitHub Pages cannot send headers', () => {
+      const policy = html().match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)"/)?.[1] ?? '';
+      expect(policy).toContain("default-src 'self'");
+      expect(policy).toContain("script-src 'self'");
+      expect(policy).toContain("base-uri 'none'");
+      expect(policy).not.toContain('unsafe');
+      expect(policy).not.toContain('frame-ancestors');
+      const start = html().indexOf('http-equiv="Content-Security-Policy"');
+      expect(start).toBeLessThan(html().indexOf('<script'));
+      expect(start).toBeLessThan(html().indexOf('rel="stylesheet"'));
+      expect(start).toBeLessThan(html().indexOf('rel="preload"'));
     });
 
     test('has the shared menu and footer, and never links to the dashboard', () => {

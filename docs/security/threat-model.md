@@ -47,7 +47,8 @@ Automated scanners and bots, credential-stuffers, a stranger who finds the URL (
 | Threat | Defense | Checked by |
 |---|---|---|
 | CSRF | State changes are POST only, the `Origin` must exactly match `SITE_ORIGIN`, cookies are `SameSite=Lax`, and passkey steps use a JSON content type. Private pages use `Referrer-Policy: same-origin`, because `no-referrer` makes browsers send `Origin: null` on form posts | HTTP and browser tests |
-| Clickjacking | `frame-ancestors 'none'` and `X-Frame-Options: DENY` | HTTP test |
+| The public pages' permission being used for something else. They live on another address, so they get one exception to the rule above | The exception covers the visitor endpoint only, matched exactly, and it can only count a page view. Every spelling of every other route refuses that address. The reply names the address exactly, never a wildcard, and never allows credentials, so a visit carries no cookies | Unit, HTTP and browser tests |
+| Clickjacking | On the dashboard and editor, `frame-ancestors 'none'` and `X-Frame-Options: DENY`. The public pages can't set either, as explained under the remaining risks | HTTP test |
 | Open redirect | Redirects only go to fixed internal paths, and no `next` parameter is accepted | HTTP test |
 | A `javascript:` link slipped into the content | Outside links must be https, and repository links must be https on github.com. The content loader refuses anything else, so a bad edit fails the build. The CSP blocks `javascript:` links as well | Unit test |
 | **Stored XSS through analytics.** The visitor endpoint is public, so a crafted path or referrer could target the owner's dashboard | Paths must match an allowlist of real routes, referrers are reduced to a validated hostname, all output is auto-escaped, `set:html` is never used, and CSP blocks inline script as a second layer | Unit and browser tests |
@@ -59,7 +60,7 @@ Automated scanners and bots, credential-stuffers, a stranger who finds the URL (
 
 | Threat | Defense | Checked by |
 |---|---|---|
-| Inflating or polluting visitor counts | Same-origin check, per-client rate limit, bot filtering, schema validation, and daily caps on new referrer hosts and page paths | HTTP and unit tests |
+| Inflating or polluting visitor counts | An `Origin` check against the public pages' exact address, per-client rate limit, bot filtering, schema validation, and daily caps on new referrer hosts and page paths | HTTP and unit tests |
 | Burning the free quota | Rate limit, 1 KB body cap, early rejection before database writes, and a ceiling of 20,000 counted views a day, which keeps writes under the free plan. Vercel's DDoS protection sits in front. | HTTP and unit tests |
 | Oversized or malformed bodies | Size is capped while reading, and parse failures return a plain 400 | HTTP test |
 
@@ -69,7 +70,7 @@ Fake visits can't be fully prevented: a determined attacker can imitate a browse
 
 | Threat | Defense |
 |---|---|
-| Tracking visitors | No cookies and no fingerprint kept. A daily visitor hash is salted with a random value that is deleted the next day, so visitors can't be linked across days or traced back. The browser keeps only two small preferences that never leave it: the chosen theme, and for the current tab session, that the home page's intro has already played |
+| Tracking visitors | No cookies and no fingerprint kept. A daily visitor hash is salted with a random value that is deleted the next day, so visitors can't be linked across days or traced back. A visitor's browser keeps only two small preferences that never leave it: the chosen theme, and for the current tab session, that the home page's intro has already played. Only the owner's browser also keeps a mark that stops its own visits being counted |
 | Storing personal data | Raw IP addresses and user agents are never stored. Only the path, referrer hostname, country code and device class are kept, as daily totals |
 | Ignoring opt-outs | Do Not Track and Global Privacy Control are honored in both the browser and the server |
 
@@ -81,6 +82,7 @@ Fake visits can't be fully prevented: a determined attacker can imitate a browse
 | Secrets in browser code | Secrets are read from `process.env` at runtime on the server only, so the build can't inline them, and no secret uses the `PUBLIC_` prefix | Scan of `dist/client` |
 | Secrets in the chat or logs | The setup link goes only to the owner's terminal, and errors never echo tokens | Process |
 | Malicious npm package | Exact versions, a committed lockfile, install scripts disabled, and `npm audit` | `npm audit` |
+| A publishing tool changed under us. GitHub Actions run with the power to change the live site | Each action is pinned to an exact commit, not a tag that can move. The build job can only read the repository and holds no secrets. Only the separate publish job can change the site, and it runs none of the repository's code | Code review |
 | Third-party script compromise | No CDNs or third-party scripts. Fonts and libraries are self-hosted, enforced by CSP. One exception: the content editor is allowed Google Fonts' stylesheet and font files, because Keystatic hard-codes its Inter font. That allows styles and fonts only, and scripts stay same-origin | Browser test |
 | Keystatic left in local mode in production | Storage mode is chosen automatically by the Vercel build, and `/keystatic` also requires a dashboard session | Automated check |
 | Private project code link leaked | A private project's repo link is removed by the content loader itself | Unit test |
@@ -97,7 +99,8 @@ Fake visits can't be fully prevented: a determined attacker can imitate a browse
 - **The editor's GitHub token.** Keystatic keeps its short-lived GitHub token in a cookie that page scripts can read, because the editor calls GitHub from the browser. That token can change the site's content, and the CSP is what stops an injected script from reaching it.
 - **Floods.** A flood against the sign-in routes can use up the shared limit and delay sign-in for up to 15 minutes, though a signed-in session keeps working. A sustained flood could also use up the free function allowance and stop the dashboard and visitor counting until it resets. Vercel's firewall can block a flood by address.
 - **A new resume upload isn't checked.** The editor can't look inside an uploaded PDF. The field warns about the phone number, and anything uploaded is public.
-- **Not yet checked on a live site.** The public page's headers from `vercel.json`, Keystatic's GitHub storage, passkeys on the real domain and country data can only be tested after the first deploy. `docs/deploy.md` lists those checks.
+- **The public pages can't send security headers.** GitHub Pages doesn't allow custom headers, so their Content Security Policy is a tag in the page. That covers scripts, styles and connections. It can't include `frame-ancestors`, so another site could show the public pages in a frame. Those pages have no sign-in and nothing private to click, and the dashboard keeps its full headers on Vercel.
+- **Not yet checked on a live site.** The redirects in `vercel.json`, Keystatic's GitHub storage, passkeys on the real domain and country data can only be tested after the first deploy. `docs/deploy.md` lists those checks.
 - **This review isn't independent.** The same author wrote the code and these tests. Have someone else review it before relying on it for anything beyond a portfolio.
 - **Platform and browser flaws.** No system can be proven unbreakable. This reduces the risk, and it doesn't remove it.
 - **Public email address.** Showing it on the contact section and in the resume will attract some spam. That was a deliberate choice.

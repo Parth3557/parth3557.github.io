@@ -27,6 +27,7 @@
 - Accessibility: semantic HTML, alt text, focus states, contrast AA, skip-to-content link.
 - Secrets (`KEYSTATIC_*`, form keys) only in `.env` / Vercel env vars, never committed. Keep `.env.example` up to date.
 - `/keystatic` must be `noindex` and excluded from the sitemap.
+- The public pages are served by GitHub Pages, so they can't rely on response headers or any server code. The dashboard, the editor and the visitor counter run on Vercel. `docs/deploy.md` explains the split.
 
 ## Definition of done (every page)
 - Builds without warnings, no console errors

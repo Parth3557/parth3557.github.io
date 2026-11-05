@@ -1,6 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
-import { isEditorPath, isGatedPath, isPublicAuthPath, originAllowed, securityHeaders, sessionCookie } from './lib/server/guards';
-import { getDb, siteOrigin } from './lib/server/runtime';
+import { isEditorPath, isGatedPath, isPublicAuthPath, securityHeaders, sessionCookie, writeAllowed } from './lib/server/guards';
+import { getDb, publicSiteOrigin, siteOrigin } from './lib/server/runtime';
 import { readSession } from './lib/server/sessions';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
@@ -23,7 +23,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const area = isEditorPath(path) ? 'editor' : 'private';
 
   // A write must come from this site's own pages. Other sites and missing origins are refused.
-  if (!SAFE_METHODS.has(context.request.method) && !originAllowed(context.request.headers.get('origin'), siteOrigin())) {
+  if (!SAFE_METHODS.has(context.request.method) && !writeAllowed(path, context.request.headers.get('origin'), siteOrigin(), publicSiteOrigin())) {
     return secured(respond(403, 'Forbidden'), area);
   }
 

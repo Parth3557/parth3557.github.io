@@ -28,10 +28,10 @@ Estimated total: 8 phases, about 6–10 Claude Code sessions.
 - [ ] Global tokens as CSS custom properties, mapped into the Tailwind config
 - [ ] Header (logo "PJ" monogram, nav, theme toggle), footer (socials)
 - [ ] Empty routes: `/`, `/journey`, `/projects`, `/about`, `/experience`, `/contact`, `404`
-- [ ] Push to `Parth3557/portfolio`, connect the repo to Vercel, confirm preview + production deploys
+- [ ] Push to `Parth3557/parth3557.github.io`, publish the public pages on GitHub Pages, connect the repo to Vercel for the dashboard
 - [ ] `.gitignore`, `.env.example`, README for the repo
 
-**Done when:** `https://<project>.vercel.app` shows the nav and every route loads.
+**Done when:** `https://parth3557.github.io` shows the nav and every route loads.
 
 ---
 

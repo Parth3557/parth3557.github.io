@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import '../styles/site.css';
 import { theme } from '../lib/content';
+import { publicCsp } from '../lib/public-csp';
 
 interface Props {
   title: string;
@@ -16,6 +17,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 <html lang="en" data-animations={theme.heavyAnimations ? 'full' : 'simple'}>
   <head>
     <meta charset="utf-8" />
+    {!import.meta.env.DEV && <meta http-equiv="Content-Security-Policy" content={publicCsp(import.meta.env.PUBLIC_COLLECT_URL)} />}
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />

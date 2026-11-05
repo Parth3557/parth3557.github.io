@@ -147,11 +147,11 @@ Use the **theme-factory / frontend-design** skills to refine this into a full to
 | Animation | **GSAP** (all plugins are free, including ScrollTrigger, SplitText and MorphSVG) + **Lenis** | Best-in-class scroll animation |
 | Content | **Keystatic** (git-based CMS) | All content lives as JSON/Markdoc files in the repo |
 | Dashboard | **Keystatic admin at `/keystatic`**, GitHub login, **GitHub storage mode** | I edit in a UI, it commits to GitHub, the site redeploys automatically. Only accounts with write access to the repo can log in |
-| Hosting | **Vercel (Hobby, free)** with `@astrojs/vercel` adapter | Keystatic's GitHub mode needs Node API routes, which GitHub Pages can't run. Pages stay pre-rendered; only `/keystatic` + `/api/keystatic` run server-side |
+| Hosting | **GitHub Pages (free)** for the public pages, **Vercel (Hobby, free)** with `@astrojs/vercel` for the dashboard | The free address is on `github.io`, which only GitHub Pages can serve. Keystatic's GitHub mode and the dashboard need Node API routes, which GitHub Pages can't run, so those stay on Vercel |
 | Forms | Web3Forms or Formspree free tier (optional) | No backend needed |
 | Analytics | Vercel Web Analytics (free) (optional) | Visitor counts |
 
-**Repo:** create `Parth3557/portfolio` (public). Site URL: `parth3557.vercel.app` (or a custom domain later).
+**Repo:** `Parth3557/parth3557.github.io` (public). Site URL: `https://parth3557.github.io` (or a custom domain later). Dashboard: `https://parth3557.vercel.app/dashboard`. `docs/deploy.md` has the steps.
 
 ### Keystatic content model
 - **Singletons:** `profile` (name, title, bio, curiosity statement, photo, socials, resume PDF upload, availability status), `home` (hero text, featured project picks), `about` (story, values, badminton section), `theme` (accent colour pick, enable/disable heavy animations)

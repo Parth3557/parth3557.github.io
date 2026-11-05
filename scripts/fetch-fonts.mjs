@@ -1,8 +1,8 @@
 /**
  * Downloads Clash Display and Satoshi at build time. Their license allows self-hosting on your own
  * site but not publishing the files in a public repository, so public/fonts is git-ignored.
- * Locally a failed download only warns, and the site uses a system font. On Vercel it stops the
- * build, so the last good deployment stays live.
+ * Locally a failed download only warns, and the site uses a system font. On GitHub and Vercel it
+ * stops the build, so the last good deployment stays live.
  */
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 
@@ -27,7 +27,7 @@ for (const [family, name, weights] of FONTS) {
       console.log(`fetched ${file}`);
     } catch (error) {
       console.warn(`Could not fetch ${file}: ${error.message}.`);
-      if (process.env.VERCEL) process.exitCode = 1;
+      if (process.env.VERCEL || process.env.CI) process.exitCode = 1;
     }
   }
 }

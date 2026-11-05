@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["bom1"],
+  "redirects": [
+    { "source": "/", "destination": "https://parth3557.github.io/", "permanent": false },
+    { "source": "/:page(journey|projects|about|experience|contact)/:rest*", "destination": "https://parth3557.github.io/:page/:rest*", "permanent": false }
+  ],
   "headers": [
     {
       "source": "/((?!dashboard|keystatic|api|resume).*)",

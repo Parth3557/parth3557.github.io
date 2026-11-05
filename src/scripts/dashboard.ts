@@ -3,7 +3,8 @@ import { themeToggle } from './theme-toggle';
 
 themeToggle(new AbortController().signal);
 
-// From now on, this browser's own visits to the public site aren't counted.
+// From now on, this browser's own visits to the public site aren't counted. When the public pages
+// live on another address, this mark can't reach them, so the View site link carries it across.
 try {
   localStorage.setItem('pj_owner', '1');
 } catch {

@@ -8,7 +8,7 @@ import { count, countryName, greetingFor, pageName, plural, rangeFrom, RANGES, w
 import { editorLink, editsGoToGitHub } from '../../lib/editor-links';
 import { listCredentials, recentAudit } from '../../lib/server/enrollment';
 import { ownerSession } from '../../lib/server/http';
-import { getDb } from '../../lib/server/runtime';
+import { getDb, publicSiteOrigin } from '../../lib/server/runtime';
 import { listSessions } from '../../lib/server/sessions';
 import { readStats } from '../../lib/server/visits';
 
@@ -51,7 +51,7 @@ const manage = [
   <header class="dash-top">
     <a class="nav__logo" href="/" aria-label="Back to the public site">PJ</a>
     <div class="dash-top__right">
-      <a class="dash-link" href="/">View site</a>
+      <a class="dash-link" href={`${publicSiteOrigin()}/#owner`} title="Opens your site and stops counting this browser's visits">View site</a>
       <button class="toggle" type="button" data-theme-toggle aria-label="Switch colour theme">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"></path></svg>
       </button>

@@ -44,6 +44,19 @@ export function originAllowed(origin: string | null, siteOrigin: string): boolea
   return origin === siteOrigin;
 }
 
+/** The one route the public pages may call. Matched exactly, so no other spelling of a path qualifies. */
+const COLLECT_PATH = '/api/collect';
+
+/** A write must come from the app itself. The public pages can live on another address, and may only send visits. */
+export function writeAllowed(path: string, origin: string | null, siteOrigin: string, publicOrigin: string): boolean {
+  return originAllowed(origin, siteOrigin) || (path === COLLECT_PATH && originAllowed(origin, publicOrigin));
+}
+
+/** Lets the public pages read the visitor endpoint's reply. Never a wildcard, and never with credentials. */
+export function collectCorsHeaders(origin: string | null, publicOrigin: string): Record<string, string> {
+  return originAllowed(origin, publicOrigin) ? { 'Access-Control-Allow-Origin': publicOrigin, Vary: 'Origin' } : { Vary: 'Origin' };
+}
+
 const SESSION_MAX_AGE_SECONDS = 12 * 60 * 60;
 
 export function sessionCookie(siteOrigin: string) {
