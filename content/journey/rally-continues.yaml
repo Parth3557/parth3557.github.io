@@ -1,0 +1,13 @@
+title: Rally continues.
+date: "2026"
+place: ""
+description: Amazon ML Challenge 2026, as team Dead ReLUs Society.
+order: 6
+showOnHome: true
+fact: 15% of the test data was unlabeled French records, but training covered
+  only the US and India, so we self-trained on our most confident predictions.
+icon: ""
+smash: false
+metric: "91"
+metricFrom: 10000
+metricLabel: Team rank of 10,000+ teams

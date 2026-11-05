@@ -1,0 +1,25 @@
+title: Artifact-Robust GI Endoscopy Classifier
+badge: 97.99% accuracy
+summary: FastViT-SA24 + GRL + DFR, with six release gates against shortcut
+  learning. 97.79% on tissue alone, about chance on the border.
+results:
+  - 97.99% accuracy
+  - 97.79% tissue-only
+  - Border-only ≈ chance (24.6%)
+  - 5 seeds
+tech:
+  - FastViT-SA24
+  - GRL
+  - DFR
+category: research
+repoUrl: ""
+isPrivate: true
+featured: false
+order: 4
+problem: "TODO: describe the problem"
+approach: "TODO: describe the approach"
+coverImage: /images/projects/artifact-robust-gi-endoscopy-classifier/coverImage.webp
+coverDiagram: none
+coverAlt: The GI endoscopy dashboard classifying a test image as a polyp, with
+  class probabilities and the circular tissue crop the model sees.
+coverCredit: "Sample image: HyperKvasir, CC BY 4.0"

@@ -1,0 +1,21 @@
+title: English Coach
+badge: Android, offline
+summary: Kotlin app with an A1–C2 path, spaced repetition, Vosk speech scoring
+  and a Gemini speaking coach. Based on MIT-licensed Kotoba.
+results: []
+tech:
+  - Kotlin
+  - Spaced repetition
+  - Vosk
+  - Gemini
+category: android
+repoUrl: https://github.com/Parth3557/english-coach-android
+isPrivate: false
+featured: false
+order: 8
+problem: "TODO: describe the problem"
+approach: "TODO: describe the approach"
+coverImage: /images/projects/english-coach/coverImage.webp
+coverDiagram: none
+coverAlt: Home, Learn and Grammar screens from the English Coach Android app.
+coverCredit: ""

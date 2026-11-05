@@ -1,0 +1,26 @@
+title: RAG ML Study Assistant
+badge: Page-cited answers
+summary: Reads PDFs with PyMuPDF and Tesseract OCR, searches them with FAISS,
+  and answers with Qwen2.5-7B, citing the page.
+results:
+  - Page-cited answers
+tech:
+  - PyMuPDF
+  - Tesseract OCR
+  - MiniLM embeddings
+  - FAISS IndexFlatIP
+  - Qwen2.5-7B
+  - HF Inference
+  - Flask
+category: genai
+repoUrl: https://github.com/Parth3557/RAG
+isPrivate: false
+featured: true
+order: 3
+problem: "TODO: describe the problem"
+approach: "TODO: describe the approach"
+coverImage: /images/projects/rag-ml-study-assistant/coverImage.webp
+coverDiagram: none
+coverAlt: The ML Study Assistant showing three cited sources with page numbers
+  and scores, then refusing an off-topic question about baking a cake.
+coverCredit: ""

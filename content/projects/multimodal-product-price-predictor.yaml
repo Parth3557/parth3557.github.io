@@ -1,0 +1,26 @@
+title: Multimodal Product Price Predictor
+badge: AIR 38 of 9,000+
+summary: BERT + ViT dual encoder with a fusion head and SMAPE loss, built for
+  the Amazon ML Challenge 2025.
+results:
+  - All India Rank 38 of 9,000+ teams, Amazon ML Challenge 2025
+tech:
+  - BERT
+  - ViT
+  - Fusion head
+  - SMAPE loss
+  - AdamW + cosine LR
+  - PyTorch
+category: vision
+repoUrl: https://github.com/Parth3557/multimodal-price-predictor
+isPrivate: false
+featured: true
+order: 1
+problem: "TODO: describe the problem"
+approach: "TODO: describe the approach"
+coverImage: null
+coverDiagram: multimodal
+coverAlt: Architecture diagram. Product text goes through BERT and the product
+  image through a Vision Transformer. A fusion head combines them to predict the
+  price.
+coverCredit: ""

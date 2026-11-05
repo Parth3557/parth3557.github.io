@@ -1,0 +1,22 @@
+title: "NeuroScan: Brain Tumor MRI Classifier"
+badge: 98.07% test accuracy
+summary: From-scratch ResNet-style CNN in a Flask app with accounts, history, an
+  admin dashboard and Gemini summaries. Team project.
+results:
+  - 98.07% test accuracy
+tech:
+  - ResNet-style CNN
+  - Flask
+  - Gemini
+category: vision
+repoUrl: https://github.com/Parth3557/brain-cancer-detection
+isPrivate: false
+featured: false
+order: 6
+problem: "TODO: describe the problem"
+approach: "TODO: describe the approach"
+coverImage: /images/projects/neuroscan-brain-tumor-mri-classifier/coverImage.webp
+coverDiagram: none
+coverAlt: NeuroScan showing an uploaded brain MRI and its predicted tumor class
+  with a confidence score.
+coverCredit: ""

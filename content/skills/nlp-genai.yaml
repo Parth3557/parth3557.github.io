@@ -1,0 +1,9 @@
+title: NLP & GenAI
+items:
+  - RAG
+  - FAISS
+  - ChromaDB
+  - BERT
+  - Sentence Transformers
+  - Hugging Face
+order: 2

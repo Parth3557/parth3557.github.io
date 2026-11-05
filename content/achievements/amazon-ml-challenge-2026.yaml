@@ -1,0 +1,18 @@
+title: Amazon ML Challenge 2026
+metric: "91"
+metricFrom: 10000
+metricLabel: Team rank of 10,000+ active teams
+year: "2026"
+details:
+  - Team Dead ReLUs Society, with Manhar Ayyar, Sumit Kothari and Raahul M.
+  - F0.5 of 0.989805, which punishes a wrong merge more than a missed match.
+  - "Business entity resolution: matching 1.7 million business records against
+    nearly 10 million noisy records from two other sources."
+  - Training data covered only the US and India, but 15% of the test set was
+    unlabeled French records.
+  - Fine-tuned LaBSE retriever (50 candidates per record, 99.9% of true matches
+    captured on validation), XLM-RoBERTa cross-encoder reranker, and a LightGBM
+    decision model on 244 features. Self-training on the French records using
+    the most confident predictions as pseudo-labels.
+sourceUrl: https://www.linkedin.com/posts/parth3557_amazonmlchallenge-machinelearning-entityresolution-share-7513685860068990976-7eCE/
+order: 2

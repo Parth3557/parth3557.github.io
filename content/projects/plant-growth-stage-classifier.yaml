@@ -1,0 +1,26 @@
+title: Plant Growth Stage Classifier
+badge: 3 models compared
+summary: EfficientNet-B0 (92%), ViT (89.75%) and ResNet50V2 (94%) side by side
+  in one Flask + Docker app.
+results:
+  - "EfficientNet-B0: 92%"
+  - "ViT: 89.75%"
+  - "ResNet50V2: 94%"
+tech:
+  - EfficientNet-B0
+  - ViT
+  - ResNet50V2
+  - Flask
+  - Docker
+category: vision
+repoUrl: https://github.com/Parth3557/plant-growth-stage-classifier
+isPrivate: false
+featured: false
+order: 7
+problem: "TODO: describe the problem"
+approach: "TODO: describe the approach"
+coverImage: /images/projects/plant-growth-stage-classifier/coverImage.webp
+coverDiagram: none
+coverAlt: The Plant Growth Stage Classifier labelling a pomegranate photo as
+  mature, with a confidence bar for every growth stage.
+coverCredit: ""

@@ -1,0 +1,29 @@
+title: AI-Powered Learning Path Generator
+badge: IET SET paper
+summary: Knowledge graph, DAG, RAG and XAI. 100% prerequisite satisfaction, and
+  cached explanations fell from 5.06 s to 89.6 ms.
+results:
+  - 100% prerequisite satisfaction
+  - 100% retrieval hit rate
+  - "Explanation cache: 5.06 s → 89.6 ms"
+tech:
+  - Knowledge graph
+  - DAG
+  - RAG
+  - XAI
+  - Flask
+  - MySQL
+  - ChromaDB
+  - Gemini
+category: genai
+repoUrl: https://github.com/Parth3557/ai-learning-path-generator
+isPrivate: false
+featured: true
+order: 2
+problem: "TODO: describe the problem"
+approach: "TODO: describe the approach"
+coverImage: /images/projects/ai-powered-learning-path-generator/coverImage.webp
+coverDiagram: none
+coverAlt: The Learning Path Generator's Machine Learning roadmap, with an AI
+  explanation open under its first module.
+coverCredit: ""
