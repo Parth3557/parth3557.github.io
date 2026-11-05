@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concept A: The question mark</title>
+<script>
+  (function () {
+    var root = document.documentElement, saved = null;
+    try { saved = localStorage.getItem('theme'); } catch (e) {}
+    root.dataset.theme = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    root.classList.add('js', 'js-wait');
+    setTimeout(function () { root.classList.remove('js-wait'); }, 3500);
+  })();
+</script>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=satoshi@400,500,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .nav { position: absolute; left: 0; right: 0; top: 0; }
+
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    padding-top: var(--nav-h);
+    display: grid;
+    grid-template-rows: minmax(340px, 1fr) auto;
+  }
+
+  /* The stage is half a court seen from above: net at the top, baseline at the bottom. */
+  .stage {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 var(--gutter);
+  }
+  .lines { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .lines i { position: absolute; display: block; background: var(--line); }
+  .lines .h { left: var(--gutter); right: var(--gutter); height: 1px; transform-origin: left center; }
+  .lines .v { top: 0; bottom: 0; width: 1px; transform-origin: center bottom; }
+  .line-net { top: 0; }
+  .line-short { top: 29.5%; }
+  .line-long { bottom: 11.3%; }
+  .line-side-a { left: var(--gutter); }
+  .line-side-b { right: var(--gutter); }
+  .line-single-a { left: calc(var(--gutter) + (100% - 2 * var(--gutter)) * .075); }
+  .line-single-b { right: calc(var(--gutter) + (100% - 2 * var(--gutter)) * .075); }
+  .lines .line-center { left: 50%; top: 29.5%; }
+
+  /* Each line of the name is clipped exactly at its baseline, so letters rise out of the line. */
+  .name {
+    --size: clamp(4.5rem, 11.5vw, 13.5rem);
+    margin: 0 0 .03em; /* a sliver of paper, or the round letters merge into the ink line */
+    display: flex;
+    gap: .2em;
+    font: 600 var(--size)/1 var(--font-display);
+    letter-spacing: .008em;
+    font-kerning: none;
+    text-rendering: optimizeSpeed;
+    white-space: nowrap;
+  }
+  .name__line {
+    display: block;
+    height: .82em; /* Clash Display's baseline, measured at line-height 1 */
+    clip-path: inset(-1em -.2em -.03em -.2em); /* letters rise from the court line itself */
+  }
+
+  .mark {
+    position: absolute;
+    right: var(--gutter);
+    bottom: 0;
+    height: min(calc(100% - 6px), 43vw);
+    aspect-ratio: 306 / 640;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .hook { fill: none; stroke: var(--accent); stroke-width: 36; stroke-linecap: round; }
+  .tail { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+  .ring { fill: none; stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; opacity: 0; }
+
+  .shuttle__skirt { fill: var(--bg); stroke: var(--ink); stroke-width: 1.3; stroke-linejoin: round; }
+  .shuttle__rib { fill: none; stroke: var(--ink); stroke-width: .75; opacity: .6; }
+  .shuttle__cork { fill: var(--accent); }
+
+  .serve {
+    position: absolute;
+    right: var(--gutter);
+    bottom: 0;
+    width: min(20vw, 300px);
+    height: min(calc(100% - 6px), 43vw);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .serve .fact { right: 62%; bottom: 30%; }
+
+  .baseline { position: relative; z-index: 6; height: 2px; background: var(--ink); transform-origin: left center; }
+  .baseline__pulse {
+    position: absolute;
+    left: 0;
+    top: -1px;
+    height: 4px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: right center;
+    opacity: 0;
+  }
+
+  .below {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) auto;
+    gap: clamp(20px, 4vw, 72px);
+    align-items: start;
+    padding: clamp(18px, 2.8vh, 30px) var(--gutter) clamp(22px, 3.4vh, 38px);
+  }
+  .who { margin: 0; color: var(--muted-text); line-height: 1.35; }
+  .who strong { display: block; margin-bottom: .2em; color: var(--ink); font: 600 clamp(1.3rem, 1.75vw, 1.7rem)/1.15 var(--font-display); letter-spacing: .005em; }
+  .why {
+    margin: 0;
+    max-width: 25ch;
+    font: 500 clamp(1.45rem, 2.25vw, 2.15rem)/1.14 var(--font-display);
+    letter-spacing: .005em;
+    text-wrap: balance;
+  }
+  .cta { display: flex; gap: 12px; }
+
+  /* Where the shuttle goes next */
+  .stops__sticky {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    padding: 72px var(--gutter);
+  }
+  .stops h2 {
+    margin: 0;
+    font: 600 clamp(2.6rem, 6.4vw, 6rem)/1 var(--font-display);
+    letter-spacing: .005em;
+  }
+  .stops__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(16px, 2.6vw, 40px);
+    border-top: 2px solid var(--ink);
+  }
+  .stop { position: relative; padding-top: 22px; }
+  .stop__dot {
+    position: absolute;
+    left: 0;
+    top: -7px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+  .stop h3 { margin: 0 0 8px; font: 600 clamp(1.3rem, 1.9vw, 1.75rem)/1.12 var(--font-display); }
+  .stop p { margin: 0; color: var(--muted-text); }
+  .rank { margin-top: 10px; }
+  .rank__n { display: block; font: 600 clamp(2.8rem, 4.6vw, 4.4rem)/1 var(--font-display); color: var(--accent-text); }
+  .rank__of { display: block; margin-top: 6px; font: 500 .85rem/1.25 var(--font-mono); color: var(--muted-text); }
+
+  .stops__flight { display: none; }
+  .js .stops { height: 300vh; }
+  .js .stops__sticky {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: clip;
+    justify-content: center;
+  }
+  .js .stops__list { margin-top: 90px; }
+  .js .stops__flight {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .hop-ghost { fill: none; stroke: var(--line); stroke-width: 2; stroke-dasharray: 2 8; stroke-linecap: round; }
+  .hop-live { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+
+  /* Nothing appears before its first animation frame. */
+  .js-wait .name__line, .js-wait .mark, .js-wait .baseline, .js-wait .lines i, .js-wait .below > * { visibility: hidden; }
+
+  @media (max-width: 1100px) {
+    .name { --size: 16vw; flex-direction: column; gap: .1em; }
+    .mark, .serve { height: min(calc(100% - 6px), 100vw); }
+    .serve { width: 44vw; }
+    .serve .fact { right: 12%; top: 34%; }
+    .below { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); }
+    .cta { grid-column: 1 / -1; }
+  }
+  @media (max-width: 1000px) {
+    .stops__list { grid-template-columns: minmax(0, 1fr); border-top: 0; border-left: 2px solid var(--ink); gap: clamp(18px, 3vh, 34px); }
+    .js .stops__list { margin-top: 0; }
+    .stop { padding: 0 0 0 46px; }
+    .stop__dot { left: -7px; top: 6px; }
+    .rank { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+    .rank__n { min-width: 2.9em; font-size: 2.6rem; }
+    .rank__of { margin: 0; }
+    .stops__sticky { gap: 28px; padding-top: 28px; padding-bottom: 28px; }
+  }
+  @media (max-width: 620px) {
+    .below { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .cta { flex-wrap: wrap; }
+    .cta .btn { flex: 1 1 auto; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="cursor" aria-hidden="true"><div class="cursor__dot"></div><div class="cursor__q">?</div></div>
+
+<header class="nav">
+  <a class="nav__logo" href="#" aria-label="Parth Jadhav, home">PJ</a>
+  <div class="nav__right">
+    <nav aria-label="Main">
+      <ul class="nav__links">
+        <li><a href="#next">Journey</a></li>
+        <li><a href="#next">Projects</a></li>
+        <li><a href="#next">About</a></li>
+        <li><a href="#next">Experience</a></li>
+        <li><a href="#next">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="nav__menu" type="button">Menu</button>
+    <button class="toggle" type="button" data-theme-toggle aria-label="Switch colour theme">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="stage">
+      <div class="lines" aria-hidden="true">
+        <i class="h line-net"></i><i class="h line-short"></i><i class="h line-long"></i>
+        <i class="v line-side-a"></i><i class="v line-side-b"></i>
+        <i class="v line-single-a"></i><i class="v line-single-b"></i><i class="v line-center"></i>
+      </div>
+
+      <h1 class="name"><span class="name__line">Parth</span> <span class="name__line">Jadhav</span></h1>
+
+      <svg class="mark" viewBox="0 0 306 640" aria-hidden="true" focusable="false">
+        <defs>
+          <!-- Drawn pointing along +x, cork first, centred on 0,0. The path is what it flies along. -->
+          <g id="shuttle-shape">
+            <path class="shuttle__skirt" d="M12-7.4-26-17.5C-28-14-27-12-29-9.2-30.6-6.6-29-4.6-30-2.2-30.6 0-30.6 0-30 2.2-29 4.6-30.6 6.6-29 9.2-27 12-28 14-26 17.5L12 7.4Z"/>
+            <path class="shuttle__rib" d="M12-4.4-29-9.2M12-1.5-30-2.2M12 1.5-30 2.2M12 4.4-29 9.2"/>
+            <path class="shuttle__rib" d="M-3-12.2Q-.4 0-3 12.2M-8.5-13.7Q-5.4 0-8.5 13.7"/>
+            <path class="shuttle__cork" d="M11-8C23-8 30-4.6 30 0 30 4.6 23 8 11 8 9.4 8 9.4-8 11-8Z"/>
+          </g>
+        </defs>
+        <path id="flight" fill="none" stroke="none"/>
+        <path id="tail" class="tail" pathLength="1"/>
+        <path id="hook" class="hook" pathLength="1" d="M36 176C36 88 94 32 166 32 240 32 288 86 288 152 288 214 248 248 208 282 176 310 160 340 160 392L160 452"/>
+        <ellipse class="ring" cx="160" cy="640" rx="34" ry="9"/>
+        <ellipse class="ring" cx="160" cy="640" rx="34" ry="9"/>
+        <use id="shuttle" href="#shuttle-shape" transform="translate(160 572.5) rotate(90) scale(2.25)"/>
+      </svg>
+
+      <button class="serve" type="button" data-curious aria-label="Serve the shuttle again. Hidden fact: off the screen, you'll find me on a badminton court.">
+        <span class="fact" aria-hidden="true">Off the screen, you'll find me on a badminton court. Click to serve again.</span>
+      </button>
+    </div>
+
+    <div class="baseline" aria-hidden="true"><div class="baseline__pulse"></div></div>
+
+    <div class="below">
+      <p class="who"><strong>AI / ML Engineer</strong>M.Sc. AI &amp; ML student at VIT Vellore<br>Kolhapur, India</p>
+      <p class="why">Every project starts with a &ldquo;why?&rdquo; and ends with something I can deploy.</p>
+      <div class="cta">
+        <a class="btn btn--primary" href="#next" data-magnetic>See what I've built</a>
+        <a class="btn" href="#next" data-magnetic>Follow the journey</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="stops" id="next">
+    <div class="stops__sticky">
+      <h2>Where did it start?</h2>
+      <ol class="stops__list">
+        <li class="stop"><span class="stop__dot"></span>
+          <h3>Kolhapur: where curiosity started.</h3>
+          <p>B.Sc. Computer Science, Vivekanand College. Graduated May 2023.</p></li>
+        <li class="stop"><span class="stop__dot"></span>
+          <h3>First real code in production.</h3>
+          <p>Android Developer Intern, Dropout Technologies, Pune. Jun to Dec 2023.</p></li>
+        <li class="stop"><span class="stop__dot"></span>
+          <h3>Going deep into AI.</h3>
+          <p>M.Sc. AI &amp; ML, VIT Vellore. 2025 onward.</p></li>
+        <li class="stop"><span class="stop__dot"></span>
+          <h3>Smash: national stage.</h3>
+          <p>Amazon ML Challenge 2025.</p>
+          <div class="rank"><span class="rank__n">38</span><span class="rank__of">All India Rank<br>of 9,000+ teams</span></div></li>
+      </ol>
+      <svg class="stops__flight" aria-hidden="true" focusable="false">
+        <ellipse class="ring" id="smash-ring" rx="30" ry="9"/>
+        <use id="shuttle2" href="#shuttle-shape" visibility="hidden"/>
+      </svg>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/MotionPathPlugin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/CustomEase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.27/dist/lenis.min.js"></script>
+<script src="shared.js"></script>
+<script>
+(async () => {
+  const root = document.documentElement;
+  const showStatic = () => root.classList.remove('js', 'js-wait');
+  if (!window.gsap || !window.Lenis) return showStatic();
+
+  gsap.registerPlugin(ScrollTrigger, MotionPathPlugin, SplitText, CustomEase);
+  PJ.chrome();
+
+  if (PJ.reduced()) {
+    showStatic();
+    gsap.from('.hero', { opacity: 0, duration: 0.4 });
+    return;
+  }
+
+  history.scrollRestoration = 'manual';
+  scrollTo(0, 0);
+
+  const $ = (selector) => document.querySelector(selector);
+  const mark = $('.mark');
+  const hook = $('#hook');
+  const tail = $('#tail');
+  const flight = $('#flight');
+  const shuttle = $('#shuttle');
+  const unit = gsap.utils.clamp(0, 1);
+
+  // Resting on the baseline: cork tip touches y=640. 2.25 makes the cork as wide as the stroke.
+  const REST = { x: 160, y: 572.5, scale: 2.25 };
+  const FLIGHT_TIME = 1.75;
+  const COMET = 260; // length of the thin trail behind the shuttle before it starts drawing the mark
+
+  // Off the racket fast, hangs at the top of the hook, then the smash down the stem.
+  CustomEase.create('rally', 'M0,0 C0.1,0.32 0.2,0.42 0.38,0.5 0.58,0.58 0.74,0.64 1,1');
+
+  // GSAP offsets a new origin to keep an existing transform in place, so drop the no-JS one first.
+  shuttle.removeAttribute('transform');
+  gsap.set(shuttle, { svgOrigin: '0 0', x: REST.x, y: REST.y, rotation: 90, scale: REST.scale, autoAlpha: 0 });
+
+  await PJ.fontsReady();
+  const lenis = PJ.smoothScroll();
+
+  const split = SplitText.create('.name__line', { type: 'chars' });
+  const letters = split.chars
+    .map((el) => { const box = el.getBoundingClientRect(); return { el, x: box.left + box.width / 2 }; })
+    .sort((a, b) => a.x - b.x);
+  const lastLine = gsap.utils.toArray('.name__line').at(-1).querySelectorAll('div');
+  const fontSize = parseFloat(getComputedStyle($('.name')).fontSize);
+
+  // Everything is measured in the mark's own 306x640 space.
+  const box = mark.getBoundingClientRect();
+  const k = box.height / 640;
+  const tailStart = { x: (-60 - box.left) / k, y: ($('.name').getBoundingClientRect().top - 22 - box.top) / k };
+  const hookD = hook.getAttribute('d');
+  const tailD = `M${tailStart.x} ${tailStart.y}C${tailStart.x + (36 - tailStart.x) * 0.72} ${tailStart.y} 36 ${tailStart.y - 50} 36 176`;
+  tail.setAttribute('d', tailD);
+  flight.setAttribute('d', `${tailD}${hookD.replace(/^M[^C]+/, '')}L${REST.x} ${REST.y}`);
+
+  const tailLength = tail.getTotalLength();
+  const hookLength = hook.getTotalLength();
+  const flightLength = flight.getTotalLength();
+  hook.style.strokeDasharray = '1 1';
+
+  let nextLetter = 0;
+  function rise(el) { gsap.fromTo(el, { yPercent: 105 }, { yPercent: 0, duration: 0.75, ease: 'expo.out', overwrite: 'auto' }); }
+
+  // Keeps the trail, the mark and the letters locked to the shuttle's position.
+  function followShuttle(ratio) {
+    const travelled = ratio * flightLength;
+    const head = unit(travelled / tailLength);
+    const back = unit((travelled - COMET) / tailLength);
+    tail.style.strokeDasharray = `${head - back} 2`;
+    tail.style.strokeDashoffset = -back;
+    hook.style.visibility = travelled > tailLength ? 'visible' : 'hidden';
+    hook.style.strokeDashoffset = 1 - unit((travelled - tailLength) / hookLength);
+
+    const shuttleX = box.left + gsap.getProperty(shuttle, 'x') * k;
+    while (nextLetter < letters.length && shuttleX >= letters[nextLetter].x) rise(letters[nextLetter++].el);
+  }
+
+  const pulse = $('.baseline__pulse');
+  pulse.style.width = `${box.left + REST.x * k}px`;
+
+  const intro = gsap.timeline({ paused: true, defaults: { ease: 'expo.out' } });
+  intro
+    .fromTo('.baseline', { scaleX: 0 }, { scaleX: 1, duration: 0.85, ease: 'expo.inOut' }, 0)
+    .fromTo('.lines .h', { scaleX: 0 }, { scaleX: 1, duration: 0.95, ease: 'expo.inOut', stagger: 0.06 }, 0.05)
+    .fromTo('.lines .v', { scaleY: 0 }, { scaleY: 1, duration: 0.95, ease: 'expo.inOut', stagger: 0.05 }, 0.1)
+    .set(shuttle, { autoAlpha: 1 }, 0.3)
+    .fromTo(shuttle, { scale: REST.scale * 0.5 }, { scale: REST.scale, duration: FLIGHT_TIME, ease: 'power2.in', immediateRender: false }, 0.3)
+    .to(shuttle, {
+      duration: FLIGHT_TIME,
+      ease: 'rally',
+      motionPath: { path: flight, autoRotate: true },
+      onUpdate() { followShuttle(this.ratio); },
+    }, 0.3)
+    .addLabel('impact', 0.3 + FLIGHT_TIME)
+    .call(() => { while (nextLetter < letters.length) rise(letters[nextLetter++].el); }, null, 'impact')
+
+    // The shuttle squashes on the line, bounces once and settles: quick acceleration, soft landing.
+    .fromTo(shuttle, { scaleX: REST.scale * 0.8, scaleY: REST.scale * 1.12 }, { scaleX: REST.scale, scaleY: REST.scale, duration: 0.6, ease: 'elastic.out(1, .4)', immediateRender: false }, 'impact')
+    .to(shuttle, {
+      keyframes: [
+        { y: REST.y - 54, rotation: 81, duration: 0.17, ease: 'power2.out' },
+        { y: REST.y, rotation: 95, duration: 0.2, ease: 'power2.in' },
+        { y: REST.y - 10, rotation: 88, duration: 0.09, ease: 'power1.out' },
+        { y: REST.y, rotation: 90, duration: 0.12, ease: 'power1.in' },
+      ],
+    }, 'impact')
+    .fromTo('.mark .ring', { scale: 0.2, opacity: 0, svgOrigin: '160 640' }, { opacity: 0.9, duration: 0.01 }, 'impact')
+    .to('.mark .ring', { scale: 6, opacity: 0, duration: 0.95, stagger: 0.09 }, 'impact+=0.01')
+
+    // The hit travels along the line and through the name, nearest letter first.
+    .fromTo(pulse, { scaleX: 0, opacity: 1 }, { scaleX: 1, duration: 0.6, ease: 'power3.out', immediateRender: false }, 'impact')
+    .to(pulse, { opacity: 0, duration: 0.35, ease: 'power1.in' }, 'impact+=0.3')
+    .to(lastLine, {
+      keyframes: [
+        { y: -fontSize * 0.13, duration: 0.12, ease: 'power2.out' },
+        { y: 0, duration: 0.42, ease: 'bounce.out' },
+      ],
+      stagger: { each: 0.018, from: 'end' },
+    }, 'impact')
+    .fromTo('.below > *', { y: 26, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.9, stagger: 0.07, immediateRender: false }, 'impact+=0.08')
+    .call(setupScroll);
+
+  function resetIntro() {
+    nextLetter = 0;
+    gsap.killTweensOf(split.chars);
+    gsap.set(split.chars, { yPercent: 105, y: 0 });
+    hook.style.visibility = 'hidden';
+    hook.style.strokeDashoffset = 1;
+    tail.style.strokeDasharray = '0 2';
+    gsap.set('.below > *', { autoAlpha: 0 });
+  }
+
+  resetIntro();
+  root.classList.remove('js-wait');
+  await PJ.whenVisible();
+  intro.play();
+
+  $('.serve').addEventListener('click', () => {
+    if (intro.isActive() || scrollY > 4) return;
+    resetIntro();
+    intro.restart();
+  });
+
+  // Scrolling during the intro finishes it straight away instead of fighting the visitor.
+  lenis.on('scroll', () => { if (intro.isActive() && scrollY > 2) intro.progress(1); });
+
+  let scrollReady = false;
+  function setupScroll() {
+    if (scrollReady) return;
+    scrollReady = true;
+
+    const shuttle2 = $('#shuttle2');
+    const section = $('.stops');
+    const stage = $('.stops__sticky');
+    const svg = $('.stops__flight');
+    const stops = gsap.utils.toArray('.stop');
+    const stageBox = stage.getBoundingClientRect();
+    const dots = stops.map((stop) => {
+      const dot = stop.querySelector('.stop__dot').getBoundingClientRect();
+      return { x: dot.left + dot.width / 2 - stageBox.left, y: dot.top + dot.height / 2 - stageBox.top };
+    });
+    svg.setAttribute('viewBox', `0 0 ${stageBox.width} ${stageBox.height}`);
+
+    // Phase 1: off the baseline, down the page, onto the first stop.
+    const markBox = mark.getBoundingClientRect();
+    const firstDot = stops[0].querySelector('.stop__dot').getBoundingClientRect();
+    const end = {
+      x: (firstDot.left + firstDot.width / 2 - markBox.left) / k,
+      y: (firstDot.top + firstDot.height / 2 - markBox.top) / k,
+    };
+    const vertical = matchMedia('(max-width: 1000px)').matches;
+    const SHUTTLE_PX = vertical ? 34 : 46; // on-screen length of the shuttle at the stops
+    gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { start: 0, end: () => section.offsetTop, scrub: true } })
+      .to(shuttle, { motionPath: { path: `M${REST.x} ${REST.y}C${REST.x} ${REST.y + 380} ${end.x + 460} ${end.y - 420} ${end.x} ${end.y}`, autoRotate: true } }, 0)
+      .to(shuttle, { scale: SHUTTLE_PX / 60 / k }, 0);
+
+    // Phase 2: the section holds still while the shuttle rallies from stop to stop.
+    const add = (tag, attrs) => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      Object.entries(attrs).forEach(([name, value]) => el.setAttribute(name, value));
+      svg.insertBefore(el, svg.firstChild);
+      return el;
+    };
+    const hops = dots.slice(1).map((to, i) => {
+      const from = dots[i];
+      // On phones the arcs stay in the channel between the line and the text.
+      const control = vertical
+        ? `${from.x + 70} ${(from.y + to.y) / 2}`
+        : `${(from.x + to.x) / 2} ${from.y - (i === 2 ? 40 : 170)}`;
+      const d = `M${from.x} ${from.y}Q${control} ${to.x} ${to.y}`;
+      add('path', { class: 'hop-ghost', d });
+      return add('path', { class: 'hop-live', d, pathLength: 1, 'stroke-dasharray': '1 1', 'stroke-dashoffset': 1 });
+    });
+
+    gsap.set(stops.slice(1), { opacity: 0.22 });
+    gsap.set(shuttle2, { svgOrigin: '0 0', x: dots[0].x, y: dots[0].y, scale: SHUTTLE_PX / 60 });
+
+    const rank = $('.rank__n');
+    const count = { n: 9000 };
+    const showCount = () => { rank.textContent = Math.round(count.n).toLocaleString('en-US'); };
+    showCount();
+
+    const ring = $('#smash-ring');
+    gsap.set(ring, { attr: { cx: dots[3].x, cy: dots[3].y } });
+
+    const swapShuttles = (inside) => {
+      shuttle.style.visibility = inside ? 'hidden' : 'visible';
+      shuttle2.style.visibility = inside ? 'visible' : 'hidden';
+    };
+
+    const rally = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: {
+        trigger: section,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: true,
+        onUpdate: (self) => swapShuttles(self.progress > 0),
+        onToggle: (self) => swapShuttles(self.progress > 0),
+      },
+    });
+
+    hops.forEach((path, i) => {
+      const smash = i === 2;
+      const ease = smash ? 'power3.in' : 'power2.inOut';
+      const at = 0.35 + i * 1.5;
+      rally
+        .to(shuttle2, { duration: smash ? 0.8 : 1, ease, motionPath: { path, autoRotate: true } }, at)
+        .to(path, { strokeDashoffset: 0, duration: smash ? 0.8 : 1, ease }, at)
+        .to(stops[i + 1], { opacity: 1, duration: 0.3 }, at + 0.7);
+    });
+
+    const hit = 0.35 + 2 * 1.5 + 0.8;
+    rally
+      .call(() => {
+        if (rally.scrollTrigger.direction > 0) {
+          gsap.to('.stops__list', { keyframes: { x: [0, -8, 7, -4, 2, 0], y: [0, 6, -5, 3, -1, 0] }, duration: 0.42, ease: 'none' });
+        }
+      }, null, hit)
+      .fromTo(ring, { scale: 0.2, opacity: 0, svgOrigin: `${dots[3].x} ${dots[3].y}` }, { opacity: 0.9, duration: 0.01 }, hit)
+      .to(ring, { scale: 7, opacity: 0, duration: 0.7, ease: 'expo.out' }, hit + 0.01)
+      .to(count, { n: 38, duration: 0.9, ease: 'expo.out', onUpdate: showCount }, hit)
+      .to({}, { duration: 0.5 });
+
+    ScrollTrigger.refresh();
+  }
+})();
+</script>
+</body>
+</html>

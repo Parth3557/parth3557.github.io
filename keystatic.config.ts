@@ -1,0 +1,197 @@
+import { collection, config, fields, singleton } from '@keystatic/core';
+
+const order = fields.integer({ label: 'Order', description: 'Lower numbers come first.', defaultValue: 1 });
+
+export default config({
+  storage: import.meta.env.PUBLIC_KEYSTATIC_GITHUB === 'true'
+    ? { kind: 'github', repo: { owner: 'Parth3557', name: 'portfolio' } }
+    : { kind: 'local' },
+  ui: { brand: { name: 'Portfolio content' } },
+  singletons: {
+    profile: singleton({
+      label: 'Profile',
+      path: 'content/profile',
+      schema: {
+        name: fields.text({ label: 'Name' }),
+        title: fields.text({ label: 'Title' }),
+        studies: fields.text({ label: 'Studies line' }),
+        location: fields.text({ label: 'Location' }),
+        hometown: fields.text({ label: 'Hometown', description: 'Shown as "from ..." in the hero.' }),
+        email: fields.text({ label: 'Email', description: 'Public. It appears in the contact section.' }),
+        githubUrl: fields.url({ label: 'GitHub' }),
+        linkedinUrl: fields.url({ label: 'LinkedIn' }),
+        bio: fields.text({ label: 'Short bio', multiline: true }),
+        curiosity: fields.text({ label: 'Curiosity statement', multiline: true }),
+        availability: fields.text({ label: 'Availability' }),
+        photo: fields.image({ label: 'Profile photo', directory: 'public/images/profile', publicPath: '/images/profile/' }),
+        resume: fields.file({
+          label: 'Resume PDF',
+          description: 'Anyone can download this file. Remove your phone number first, including any hidden link or attachment in the PDF.',
+          directory: 'public/resume',
+          publicPath: '/resume/',
+        }),
+        resumePreview: fields.image({
+          label: 'Resume preview',
+          description: 'A picture of the first page, shown in the Resume section. Make it from the cleaned PDF.',
+          directory: 'public/resume',
+          publicPath: '/resume/',
+        }),
+      },
+    }),
+    home: singleton({
+      label: 'Home page',
+      path: 'content/home',
+      schema: {
+        statement: fields.text({ label: 'Hero statement', multiline: true }),
+        heroAchievement: fields.relationship({ label: 'Achievement shown in the hero', collection: 'achievements' }),
+        serveFact: fields.text({ label: 'Hidden fact on the shuttle', multiline: true }),
+        journeyHeading: fields.text({ label: 'Journey heading' }),
+        projectsHeading: fields.text({ label: 'Projects heading' }),
+        resumeHeading: fields.text({ label: 'Resume heading' }),
+        resumeNote: fields.text({ label: 'Resume note' }),
+        contactHeading: fields.text({ label: 'Contact heading' }),
+        footerNote: fields.text({ label: 'Footer note' }),
+      },
+    }),
+    about: singleton({
+      label: 'About page',
+      path: 'content/about',
+      schema: {
+        story: fields.text({ label: 'Curiosity story', multiline: true }),
+        values: fields.array(fields.text({ label: 'Value' }), { label: 'Values', itemLabel: (props) => props.value }),
+        badminton: fields.text({ label: 'Lessons from the court', multiline: true }),
+      },
+    }),
+    theme: singleton({
+      label: 'Site settings',
+      path: 'content/theme',
+      schema: {
+        heavyAnimations: fields.checkbox({ label: 'Play the full animations', description: 'Turn off to show the simple version to everyone.', defaultValue: true }),
+      },
+    }),
+  },
+  collections: {
+    projects: collection({
+      label: 'Projects',
+      slugField: 'title',
+      path: 'content/projects/*',
+      columns: ['title', 'order'],
+      schema: {
+        title: fields.slug({ name: { label: 'Title' } }),
+        badge: fields.text({ label: 'Badge', description: 'The short highlight above the title.' }),
+        summary: fields.text({ label: 'Summary', multiline: true }),
+        problem: fields.text({ label: 'Problem', multiline: true }),
+        approach: fields.text({ label: 'Approach', multiline: true }),
+        results: fields.array(fields.text({ label: 'Result' }), { label: 'Results', itemLabel: (props) => props.value }),
+        tech: fields.array(fields.text({ label: 'Technology' }), { label: 'Tech', itemLabel: (props) => props.value }),
+        category: fields.select({
+          label: 'Category',
+          options: [
+            { label: 'GenAI / RAG', value: 'genai' },
+            { label: 'Computer Vision', value: 'vision' },
+            { label: 'Research', value: 'research' },
+            { label: 'Android', value: 'android' },
+          ],
+          defaultValue: 'genai',
+        }),
+        repoUrl: fields.url({ label: 'Repository', description: 'Never shown for a private project.' }),
+        isPrivate: fields.checkbox({ label: 'Private project', description: 'Hides the repository and shows the research label instead.' }),
+        featured: fields.checkbox({ label: 'Featured' }),
+        order,
+        coverImage: fields.image({ label: 'Cover image', directory: 'public/images/projects', publicPath: '/images/projects/' }),
+        coverDiagram: fields.select({
+          label: 'Cover diagram',
+          description: 'Used when there is no cover image.',
+          options: [
+            { label: 'None', value: 'none' },
+            { label: 'Multimodal fusion', value: 'multimodal' },
+          ],
+          defaultValue: 'none',
+        }),
+        coverAlt: fields.text({ label: 'Cover description', description: 'Read aloud by screen readers.' }),
+        coverCredit: fields.text({ label: 'Cover credit', description: 'Required when the image includes licensed data.' }),
+      },
+    }),
+    journey: collection({
+      label: 'Journey',
+      slugField: 'title',
+      path: 'content/journey/*',
+      columns: ['title', 'order'],
+      schema: {
+        title: fields.slug({ name: { label: 'Title' } }),
+        date: fields.text({ label: 'Date' }),
+        place: fields.text({ label: 'Place' }),
+        description: fields.text({ label: 'Description', multiline: true }),
+        fact: fields.text({ label: 'Hidden fact', description: 'Revealed by a small "?" on this stop.', multiline: true }),
+        icon: fields.text({ label: 'Icon' }),
+        order,
+        showOnHome: fields.checkbox({ label: 'Show on the home page' }),
+        smash: fields.checkbox({ label: 'Smash moment', description: 'The shuttle comes down hard on this stop.' }),
+        metric: fields.text({ label: 'Rank' }),
+        metricFrom: fields.integer({ label: 'Rank starts falling from' }),
+        metricLabel: fields.text({ label: 'Rank caption' }),
+      },
+    }),
+    achievements: collection({
+      label: 'Achievements',
+      slugField: 'title',
+      path: 'content/achievements/*',
+      columns: ['title', 'year'],
+      schema: {
+        title: fields.slug({ name: { label: 'Title' } }),
+        metric: fields.text({ label: 'Metric' }),
+        metricFrom: fields.integer({ label: 'Metric starts falling from' }),
+        metricLabel: fields.text({ label: 'Metric label' }),
+        year: fields.text({ label: 'Year' }),
+        details: fields.array(fields.text({ label: 'Detail', multiline: true }), { label: 'Details', itemLabel: (props) => props.value }),
+        sourceUrl: fields.url({ label: 'Source link' }),
+        order,
+      },
+    }),
+    experience: collection({
+      label: 'Experience',
+      slugField: 'title',
+      path: 'content/experience/*',
+      schema: {
+        title: fields.slug({ name: { label: 'Role' } }),
+        company: fields.text({ label: 'Company' }),
+        place: fields.text({ label: 'Place' }),
+        dates: fields.text({ label: 'Dates' }),
+        points: fields.array(fields.text({ label: 'Point' }), { label: 'Points', itemLabel: (props) => props.value }),
+        order,
+      },
+    }),
+    education: collection({
+      label: 'Education',
+      slugField: 'title',
+      path: 'content/education/*',
+      schema: {
+        title: fields.slug({ name: { label: 'Degree' } }),
+        institution: fields.text({ label: 'Institution' }),
+        dates: fields.text({ label: 'Dates' }),
+        cgpa: fields.text({ label: 'CGPA' }),
+        order,
+      },
+    }),
+    skills: collection({
+      label: 'Skills',
+      slugField: 'title',
+      path: 'content/skills/*',
+      schema: {
+        title: fields.slug({ name: { label: 'Group' } }),
+        items: fields.array(fields.text({ label: 'Skill' }), { label: 'Skills', itemLabel: (props) => props.value }),
+        order,
+      },
+    }),
+    certifications: collection({
+      label: 'Certifications',
+      slugField: 'title',
+      path: 'content/certifications/*',
+      schema: {
+        title: fields.slug({ name: { label: 'Title' } }),
+        issuer: fields.text({ label: 'Issuer' }),
+        order,
+      },
+    }),
+  },
+});

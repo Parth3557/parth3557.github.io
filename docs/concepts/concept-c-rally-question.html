@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concept C: The rally and the question</title>
+<script>
+  (function () {
+    var root = document.documentElement, saved = null;
+    try { saved = localStorage.getItem('theme'); } catch (e) {}
+    root.dataset.theme = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    root.classList.add('js', 'js-wait');
+    setTimeout(function () { root.classList.remove('js-wait'); }, 3500);
+  })();
+</script>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=satoshi@400,500,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="shared.css">
+<style>
+  :root { --court-line: var(--bg); --strip: 112px; }
+  [data-theme="dark"] { --court-line: #34322D; }
+
+  .nav { position: absolute; left: 0; right: 0; top: 0; }
+
+  .hero { position: relative; padding-top: var(--nav-h); padding-bottom: 24px; }
+  .floor {
+    min-height: calc(100svh - var(--nav-h) - 24px);
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    perspective: 1500px;
+    perspective-origin: 50% 25%;
+  }
+
+  /* The plane everything is painted on. A real court is 13.4 x 6.1 m. */
+  .court {
+    --w: min(100vw - 2 * var(--gutter), (100svh - var(--nav-h) - var(--strip) - 24px) * 2.1967);
+    position: relative;
+    width: var(--w);
+    aspect-ratio: 1340 / 610;
+    container-type: inline-size;
+    margin-bottom: var(--strip);
+  }
+  .plan, .fx { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .fx { z-index: 3; pointer-events: none; }
+  #surface { fill: var(--surface); }
+  #lines line { stroke: var(--court-line); stroke-width: 3px; vector-effect: non-scaling-stroke; }
+  #net { stroke: var(--ink); stroke-width: 2px; vector-effect: non-scaling-stroke; stroke-dasharray: 1 5; stroke-linecap: round; }
+  #ground { stroke: var(--ink); stroke-width: 2px; vector-effect: non-scaling-stroke; }
+  #pulse { stroke: var(--accent); stroke-width: 4px; vector-effect: non-scaling-stroke; opacity: 0; }
+
+  .hook { fill: none; stroke: var(--accent); stroke-linecap: round; }
+  .tail { fill: none; stroke: var(--accent); stroke-width: 3px; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+  #trail { fill: none; stroke: var(--accent); stroke-width: 1.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+  #hits circle { fill: var(--accent); }
+  .ring { fill: none; stroke: var(--accent); stroke-width: 2.5px; vector-effect: non-scaling-stroke; opacity: 0; }
+
+  .shuttle__skirt { fill: var(--bg); stroke: var(--ink); stroke-width: 1.3; stroke-linejoin: round; }
+  .shuttle__rib { fill: none; stroke: var(--ink); stroke-width: .75; opacity: .6; }
+  .shuttle__cork { fill: var(--accent); }
+  #shade { fill: var(--ink); opacity: .16; }
+  #bbox { fill: none; stroke: var(--accent-2); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+  #tag { fill: var(--accent-2); font-family: var(--font-mono); font-weight: 500; }
+  .is-smash #bbox { stroke: var(--accent); }
+  .is-smash #tag { fill: var(--accent-text); }
+
+  /* The name stands on the court line. Each line is clipped there, so letters rise out of it. */
+  .name {
+    position: absolute;
+    z-index: 2;
+    left: 7.2%;
+    bottom: calc(7.54% + .03em);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .1em;
+    font: 600 15.4cqw/1 var(--font-display);
+    letter-spacing: .008em;
+    font-kerning: none;
+    text-rendering: optimizeSpeed;
+    white-space: nowrap;
+  }
+  .name__line { display: block; height: .82em; clip-path: inset(-1em -.2em -.03em -.2em); }
+
+  .why {
+    position: absolute;
+    z-index: 2;
+    left: 7.2%;
+    width: 52%;
+    top: 10.2%;
+    margin: 0;
+    font: 500 2.2cqw/1.16 var(--font-display);
+    letter-spacing: .005em;
+    text-wrap: balance;
+  }
+  .rank { position: absolute; z-index: 2; left: 53.4%; width: 21%; top: 34%; margin: 0; }
+  .rank__n { display: block; font: 600 6.4cqw/1 var(--font-display); color: var(--accent-text); }
+  .rank__of { display: block; margin-top: .4em; font: 500 max(12px, .92cqw)/1.3 var(--font-mono); color: var(--muted-text); }
+
+  .serve {
+    position: absolute;
+    z-index: 4;
+    left: 85.8%;
+    top: 83.8%;
+    width: 130px;
+    height: 180px;
+    margin: -90px 0 0 -65px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .serve .fact { right: 70%; bottom: 62%; max-width: 240px; }
+
+  .who { position: absolute; left: 0; top: calc(100% + 18px); margin: 0; color: var(--muted-text); line-height: 1.35; text-wrap: balance; }
+  .who strong { display: block; margin-bottom: .15em; color: var(--ink); font: 600 clamp(1.15rem, 1.75vw, 1.7rem)/1.15 var(--font-display); letter-spacing: .005em; }
+  .actions { position: absolute; right: 0; top: calc(100% + 20px); display: flex; align-items: center; gap: clamp(14px, 1.8vw, 26px); }
+  .cta { display: flex; gap: 12px; }
+  .social { display: flex; gap: clamp(10px, 1.2vw, 18px); }
+  .social a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--ink);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 2px;
+    text-underline-offset: .3em;
+  }
+  .social a:hover { color: var(--accent-text); }
+
+  /* Where the shuttle goes next */
+  .stops { position: relative; z-index: 5; background: var(--bg); }
+  .stops__sticky { position: relative; display: flex; flex-direction: column; gap: 48px; padding: 72px var(--gutter); }
+  .stops h2 { margin: 0; font: 600 clamp(2.6rem, 6.4vw, 6rem)/1 var(--font-display); letter-spacing: .005em; }
+  .stops__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: clamp(16px, 2.2vw, 32px);
+    border-top: 2px solid var(--ink);
+  }
+  .stop { position: relative; padding-top: 22px; }
+  .stop__dot { position: absolute; left: 0; top: -7px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink); }
+  .stop h3 { margin: 0 0 8px; font: 600 clamp(1.2rem, 1.7vw, 1.6rem)/1.12 var(--font-display); }
+  .stop p { margin: 0; color: var(--muted-text); }
+  .stop-rank { position: relative; margin-top: 10px; }
+  .stop-rank__n { display: block; font: 600 clamp(2.4rem, 3.6vw, 3.6rem)/1 var(--font-display); color: var(--accent-text); }
+  .stop-rank__of { display: block; margin-top: 6px; font: 500 .85rem/1.25 var(--font-mono); color: var(--muted-text); }
+  .stop__q {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    background: none;
+    color: var(--ink);
+    font: 600 1rem/1 var(--font-display);
+    cursor: pointer;
+  }
+  .stop__q .fact { right: 0; top: calc(100% + 8px); }
+  .stops__flight { display: none; }
+  .hop-ghost { fill: none; stroke: var(--line); stroke-width: 2; stroke-dasharray: 2 8; stroke-linecap: round; }
+  .hop-live { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+
+  /* What have I built? The same cards fill this section and the glimpse panel. */
+  .work { position: relative; z-index: 5; background: var(--bg); padding: clamp(56px, 9vh, 110px) var(--gutter) clamp(72px, 10vh, 120px); }
+  .work h2 { margin: 0 0 clamp(28px, 4vh, 48px); font: 600 clamp(2.2rem, 6.4vw, 6rem)/1 var(--font-display); letter-spacing: .005em; }
+  .cards {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: clamp(28px, 3.4vw, 44px) clamp(16px, 2.2vw, 32px);
+  }
+  .card { display: flex; flex-direction: column; min-width: 0; }
+  .card__shot { position: relative; margin: 0 0 14px; aspect-ratio: 16 / 10; overflow: clip; background: var(--surface); border: 1px solid var(--line); }
+  .card__shot img, .card__shot > svg { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  /* Hovering a card locks the tracker onto it. */
+  .card__shot::before, .card__shot::after {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .2s, transform .5s cubic-bezier(.16, 1, .3, 1);
+  }
+  .card__shot::before { content: ""; inset: 8px; border: 2px solid var(--accent-2); transform: scale(1.04); }
+  .card__shot::after {
+    content: attr(data-track);
+    left: 8px;
+    top: 8px;
+    padding: 4px 7px;
+    background: var(--accent-2);
+    color: var(--bg);
+    font: 500 .72rem/1 var(--font-mono);
+    transform: translateY(6px);
+  }
+  .card:hover .card__shot::before, .card:focus-within .card__shot::before,
+  .card:hover .card__shot::after, .card:focus-within .card__shot::after { opacity: 1; transform: none; }
+
+  .card__badge { margin: 0 0 6px; color: var(--accent-2); font: 500 .8rem/1.3 var(--font-mono); }
+  .card h3 { margin: 0 0 8px; font: 600 clamp(1.15rem, 1.5vw, 1.4rem)/1.14 var(--font-display); }
+  .card__text { margin: 0; color: var(--muted-text); font-size: .98rem; line-height: 1.42; }
+  .card__foot { margin-top: auto; padding-top: 10px; }
+  .card__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--ink);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 2px;
+    text-underline-offset: .3em;
+  }
+  .card__link:hover { color: var(--accent-text); }
+  .card__private { margin: 0; padding: 12px 0; color: var(--muted-text); font: 500 .8rem/1.35 var(--font-mono); }
+
+  .diagram__bg { fill: var(--surface); }
+  .diagram__box { fill: var(--bg); stroke: var(--ink); stroke-width: 1.5; }
+  .diagram__out { fill: var(--accent); }
+  .diagram__line { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+  .diagram__label { fill: var(--ink); font: 600 17px var(--font-display); text-anchor: middle; dominant-baseline: central; }
+  .diagram__on-accent { fill: var(--on-accent); }
+  .diagram__note { fill: var(--muted-text); font: 500 13px var(--font-mono); text-anchor: middle; }
+
+  /* The glimpse panel. Without JavaScript the same links jump to the section above. */
+  .lenis.lenis-stopped { overflow: clip; }
+  .glimpse {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    background: transparent;
+    color: var(--ink);
+  }
+  .glimpse::backdrop { background: transparent; }
+  .glimpse__shade { position: absolute; inset: 0; background: #000; opacity: .55; }
+  .glimpse__sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: calc(100svh - 48px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    border-top: 2px solid var(--ink);
+  }
+  .glimpse__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: clamp(14px, 2.4vh, 26px) var(--gutter) clamp(10px, 1.6vh, 18px); }
+  .glimpse__head h2 { margin: 0; font: 600 clamp(1.6rem, 3.4vw, 3rem)/1 var(--font-display); letter-spacing: .005em; }
+  .glimpse .cards {
+    display: flex;
+    gap: clamp(14px, 1.8vw, 26px);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    padding: 4px var(--gutter) 16px;
+    scrollbar-color: var(--line) transparent;
+    scrollbar-width: thin;
+  }
+  .glimpse .card { flex: 0 0 clamp(252px, 22.6vw, 350px); scroll-snap-align: start; scroll-margin-left: var(--gutter); }
+  .glimpse .card__text { font-size: .94rem; }
+  .glimpse__foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 var(--gutter) clamp(6px, 1.2vh, 14px); color: var(--muted-text); font-size: .95rem; }
+  .glimpse__flight { position: absolute; inset: 0; z-index: 5; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  #shuttle3 { visibility: hidden; }
+
+  /* Scroll choreography only runs when motion is on. Everything is readable without it. */
+  .motion .runway { height: 190vh; }
+  .motion .hero { position: sticky; top: 0; height: 100svh; overflow: clip; }
+  .motion .stops { height: 360vh; }
+  .motion .stops__sticky { position: sticky; top: 0; height: 100svh; overflow: clip; justify-content: center; }
+  .motion .stops__list { margin-top: 90px; }
+  .motion .stops__flight { display: block; position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+
+  html:not(.js) .plan { display: none; }
+  html:not(.js) .court { background: var(--surface); }
+
+  .js-wait .name__line, .js-wait .plan, .js-wait .who, .js-wait .why, .js-wait .rank, .js-wait .cta, .js-wait .social { visibility: hidden; }
+
+  @media (max-width: 1200px) { .who__from { display: none; } }
+
+  @media (max-width: 1000px) {
+    .stops h2 { font-size: clamp(2.2rem, 8.6vw, 4rem); }
+    .stops__list { grid-template-columns: minmax(0, 1fr); border-top: 0; border-left: 2px solid var(--ink); gap: clamp(12px, 1.8vh, 30px); }
+    .motion .stops__list { margin-top: 0; }
+    .stop { padding: 0 0 0 46px; }
+    .stop__dot { left: -7px; top: 6px; }
+    .stop h3 { margin-bottom: 4px; font-size: 1.15rem; }
+    .stop p { font-size: .95rem; line-height: 1.3; }
+    .stop-rank { position: static; display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+    .stop-rank__n { min-width: 3.6em; font-size: 2.2rem; }
+    .stop-rank__of { margin: 0; font-size: .78rem; }
+    .stop__q { top: -3px; bottom: auto; } /* beside the heading, clear of the rank row */
+    .stop__q .fact { top: auto; bottom: calc(100% + 8px); }
+    .stops__sticky { gap: 18px; padding-top: 18px; padding-bottom: 18px; }
+  }
+
+  /* On a phone the next card peeking in already says "swipe". */
+  @media (max-width: 620px) { .glimpse__hint { display: none; } }
+
+  /* Portrait: the court turns 90 degrees and the name stands on a short service line. */
+  @media (max-aspect-ratio: 1/1) {
+    :root { --strip: 0px; }
+    .hero { padding-bottom: 10px; }
+    .court {
+      --w: min(100vw - 2 * var(--gutter), (100svh - var(--nav-h) - 14px) / 2.1967);
+      aspect-ratio: 610 / 1340;
+      margin-bottom: 0;
+    }
+    .name { left: 8%; bottom: calc(35.2% + .03em); font-size: 16.4cqw; }
+    .rank { left: 8%; right: 8%; width: auto; top: 8.4%; }
+    .rank__n { font-size: 15cqw; }
+    .rank__of { margin-top: .25em; font-size: max(12px, 3.4cqw); max-width: 52%; }
+    .who { left: 8%; right: 8%; top: 66.8%; font-size: max(13px, 4.1cqw); }
+    .who__from { display: none; }
+    .why { left: 8%; width: 84%; top: 73.8%; font-size: 5.9cqw; }
+    .actions { display: contents; }
+    .social { position: absolute; z-index: 2; right: 8%; top: 7.4%; flex-direction: column; align-items: flex-end; gap: 0; }
+    .cta { position: absolute; z-index: 2; left: 8%; right: 8%; bottom: 1.5%; flex-direction: column; gap: 8px; }
+    .cta .btn { min-height: 44px; }
+    .serve { left: 78%; top: 60.5%; width: 90px; height: 120px; margin: -60px 0 0 -45px; }
+    .serve .fact { right: 20%; bottom: 100%; }
+  }
+
+  /* A short screen can't hold the whole court at once, so the hero simply scrolls. */
+  @media (max-aspect-ratio: 1/1) and (max-height: 700px), (min-aspect-ratio: 1/1) and (max-height: 500px) {
+    .court { --w: calc(100vw - 2 * var(--gutter)); }
+    .motion .runway, .motion .stops { height: auto; }
+    .motion .hero { position: relative; height: auto; overflow: visible; }
+    .motion .stops__sticky { position: relative; height: auto; overflow: visible; }
+    .motion .stops__flight { display: none; }
+  }
+  @media (min-aspect-ratio: 1/1) and (max-height: 500px) {
+    .court { margin-bottom: 136px; }
+    .actions { left: 0; right: auto; top: calc(100% + 72px); }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="cursor" aria-hidden="true"><div class="cursor__dot"></div><div class="cursor__q">?</div></div>
+
+<header class="nav">
+  <a class="nav__logo" href="#" aria-label="Parth Jadhav, home">PJ</a>
+  <div class="nav__right">
+    <nav aria-label="Main">
+      <ul class="nav__links">
+        <li><a href="#next">Journey</a></li>
+        <li><a href="#projects" data-glimpse>Projects</a></li>
+        <li><a href="#next">About</a></li>
+        <li><a href="#next">Experience</a></li>
+        <li><a href="#next">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="nav__menu" type="button">Menu</button>
+    <button class="toggle" type="button" data-theme-toggle aria-label="Switch colour theme">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="runway">
+    <section class="hero">
+      <div class="floor">
+        <div class="court">
+          <!-- Drawn in metres x 100, so one unit is a real centimetre. -->
+          <svg class="plan" viewBox="0 0 1340 610" aria-hidden="true" focusable="false">
+            <g id="lines">
+              <rect id="surface" width="1340" height="610"/>
+              <line x1="0" y1="0" x2="1340" y2="0"/>
+              <line x1="0" y1="610" x2="1340" y2="610"/>
+              <line x1="0" y1="0" x2="0" y2="610"/>
+              <line x1="1340" y1="0" x2="1340" y2="610"/>
+              <line x1="0" y1="46" x2="1340" y2="46"/>
+              <line x1="0" y1="564" x2="1340" y2="564"/>
+              <line x1="76" y1="0" x2="76" y2="610"/>
+              <line x1="1264" y1="0" x2="1264" y2="610"/>
+              <line x1="472" y1="0" x2="472" y2="610"/>
+              <line x1="868" y1="0" x2="868" y2="610"/>
+              <line x1="0" y1="305" x2="472" y2="305"/>
+              <line x1="868" y1="305" x2="1340" y2="305"/>
+              <line id="net" x1="670" y1="-16" x2="670" y2="626"/>
+            </g>
+            <polyline id="trail"/>
+            <g id="hits"></g>
+            <path id="flight" fill="none" stroke="none"/>
+            <path id="tail" class="tail" pathLength="1"/>
+            <path id="hook" class="hook" pathLength="1" stroke-width="28.1" d="M1053.06 201.5C1053.06 132.75 1098.38 89 1154.63 89 1212.44 89 1249.94 131.19 1249.94 182.75 1249.94 231.19 1218.69 257.75 1187.44 284.31 1162.44 306.19 1149.94 329.63 1149.94 370.25L1149.94 417.13"/>
+            <line id="ground" x1="0" y1="564" x2="1340" y2="564"/>
+          </svg>
+
+          <h1 class="name"><span class="name__line">Parth</span> <span class="name__line">Jadhav</span></h1>
+          <p class="why">Every project starts with a &ldquo;why?&rdquo; and ends with something I can deploy.</p>
+          <p class="rank"><span class="rank__n">38</span><span class="rank__of">All India Rank of 9,000+ teams, Amazon ML Challenge 2025</span></p>
+          <p class="who"><strong>AI / ML Engineer</strong>M.Sc. AI &amp; ML student at VIT Vellore<span class="who__from">, from Kolhapur</span></p>
+          <div class="actions">
+            <nav class="social" aria-label="Profiles">
+              <a href="https://github.com/Parth3557" target="_blank" rel="me noopener">GitHub</a>
+              <a href="https://www.linkedin.com/in/parth3557/" target="_blank" rel="me noopener">LinkedIn</a>
+            </nav>
+            <div class="cta">
+              <a class="btn btn--primary" href="#projects" data-glimpse data-magnetic>See what I've built</a>
+              <a class="btn" href="#next" data-magnetic>Follow the journey</a>
+            </div>
+          </div>
+
+          <svg class="fx" viewBox="0 0 1340 610" aria-hidden="true" focusable="false">
+            <defs>
+              <!-- Drawn pointing along +x, cork first, centred on 0,0. -->
+              <g id="shuttle-shape">
+                <path class="shuttle__skirt" d="M12-7.4-26-17.5C-28-14-27-12-29-9.2-30.6-6.6-29-4.6-30-2.2-30.6 0-30.6 0-30 2.2-29 4.6-30.6 6.6-29 9.2-27 12-28 14-26 17.5L12 7.4Z"/>
+                <path class="shuttle__rib" d="M12-4.4-29-9.2M12-1.5-30-2.2M12 1.5-30 2.2M12 4.4-29 9.2"/>
+                <path class="shuttle__rib" d="M-3-12.2Q-.4 0-3 12.2M-8.5-13.7Q-5.4 0-8.5 13.7"/>
+                <path class="shuttle__cork" d="M11-8C23-8 30-4.6 30 0 30 4.6 23 8 11 8 9.4 8 9.4-8 11-8Z"/>
+              </g>
+            </defs>
+            <line id="pulse"/>
+            <ellipse class="ring" rx="34" ry="34"/>
+            <ellipse class="ring" rx="34" ry="34"/>
+            <g id="ball" transform="translate(1149.94 511.27)">
+              <ellipse id="shade" rx="26" ry="9" visibility="hidden"/>
+              <g id="bird" transform="rotate(90) scale(1.758)"><use href="#shuttle-shape"/></g>
+              <rect id="bbox" rx="2" opacity="0"/>
+              <text id="tag" opacity="0">shuttle id:38</text>
+            </g>
+          </svg>
+
+          <button class="serve" type="button" data-curious aria-label="Play the rally again. Hidden fact: off the screen, you'll find me on a badminton court.">
+            <span class="fact" aria-hidden="true">Off the screen, you'll find me on a badminton court. Click to play the rally again.</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="stops" id="next">
+    <div class="stops__sticky">
+      <h2>Where did it start?</h2>
+      <ol class="stops__list">
+        <li class="stop"><span class="stop__dot"></span>
+          <h3>Kolhapur: where curiosity started.</h3>
+          <p>B.Sc. Computer Science, Vivekanand College. Graduated May 2023.</p></li>
+        <li class="stop"><span class="stop__dot"></span>
+          <h3>First real code in production.</h3>
+          <p>Android Developer Intern, Dropout Technologies, Pune. Jun to Dec 2023.</p></li>
+        <li class="stop"><span class="stop__dot"></span>
+          <h3>Going deep into AI.</h3>
+          <p>M.Sc. AI &amp; ML, VIT Vellore. 2025 onward.</p></li>
+        <li class="stop"><span class="stop__dot"></span>
+          <h3>Smash: national stage.</h3>
+          <p>Amazon ML Challenge 2025.</p>
+          <div class="stop-rank"><span class="stop-rank__n" data-from="9000" data-to="38">38</span><span class="stop-rank__of">All India Rank<br>of 9,000+ teams</span></div></li>
+        <li class="stop"><span class="stop__dot"></span>
+          <h3>Rally continues.</h3>
+          <p>Amazon ML Challenge 2026, as team Dead ReLUs Society.</p>
+          <div class="stop-rank"><span class="stop-rank__n" data-from="10000" data-to="91">91</span><span class="stop-rank__of">Team rank<br>of 10,000+ teams</span>
+            <button class="stop__q" type="button" data-curious aria-label="Hidden fact: 15% of the test data was unlabeled French records, but training covered only the US and India, so we self-trained on our most confident predictions.">?<span class="fact" aria-hidden="true">15% of the test data was unlabeled French records, but training covered only the US and India, so we self-trained on our most confident predictions.</span></button></div></li>
+      </ol>
+      <svg class="stops__flight" aria-hidden="true" focusable="false">
+        <ellipse class="ring" id="smash-ring" rx="30" ry="9"/>
+        <use id="shuttle2" href="#shuttle-shape" visibility="hidden"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="work" id="projects">
+    <h2>What have I built?</h2>
+    <ul class="cards">
+      <li class="card">
+        <figure class="card__shot" data-track="project id:01">
+          <svg viewBox="0 0 640 400" role="img" aria-label="Architecture diagram. Product text goes through BERT and the product image through a Vision Transformer. A fusion head combines them to predict the price.">
+            <rect class="diagram__bg" width="640" height="400"/>
+            <path class="diagram__line" d="M160 118H194M160 262H194M304 118H336V190H356M304 262H336V210H356M486 200H512"/>
+            <path class="diagram__line" d="M188 112l7 6-7 6M188 256l7 6-7 6M350 184l7 6-7 6M350 204l7 6-7 6M506 194l7 6-7 6"/>
+            <rect class="diagram__box" x="24" y="88" width="136" height="60"/><text class="diagram__label" x="92" y="118">Product text</text>
+            <rect class="diagram__box" x="24" y="232" width="136" height="60"/><text class="diagram__label" x="92" y="262">Product image</text>
+            <rect class="diagram__box" x="196" y="88" width="108" height="60"/><text class="diagram__label" x="250" y="118">BERT</text>
+            <rect class="diagram__box" x="196" y="232" width="108" height="60"/><text class="diagram__label" x="250" y="262">ViT</text>
+            <rect class="diagram__box" x="358" y="170" width="128" height="60"/><text class="diagram__label" x="422" y="200">Fusion head</text>
+            <rect class="diagram__out" x="514" y="170" width="102" height="60"/><text class="diagram__label diagram__on-accent" x="565" y="200">Price</text>
+            <text class="diagram__note" x="320" y="352">SMAPE loss, AdamW + cosine LR</text>
+          </svg>
+        </figure>
+        <p class="card__badge">AIR 38 of 9,000+</p>
+        <h3>Multimodal Product Price Predictor</h3>
+        <p class="card__text">BERT + ViT dual encoder with a fusion head and SMAPE loss, built for the Amazon ML Challenge 2025.</p>
+        <div class="card__foot"><a class="card__link" href="https://github.com/Parth3557/multimodal-price-predictor" target="_blank" rel="noopener">View code</a></div>
+      </li>
+      <li class="card">
+        <figure class="card__shot" data-track="project id:02"><img src="../../public/images/projects/learning-path.webp" width="1280" height="800" loading="lazy" decoding="async" alt="The Learning Path Generator's Machine Learning roadmap, with an AI explanation open under its first module."></figure>
+        <p class="card__badge">IET SET paper</p>
+        <h3>AI-Powered Learning Path Generator</h3>
+        <p class="card__text">Knowledge graph, DAG, RAG and XAI. 100% prerequisite satisfaction, and cached explanations fell from 5.06 s to 89.6 ms.</p>
+        <div class="card__foot"><a class="card__link" href="https://github.com/Parth3557/ai-learning-path-generator" target="_blank" rel="noopener">View code</a></div>
+      </li>
+      <li class="card">
+        <figure class="card__shot" data-track="project id:03"><img src="../../public/images/projects/rag-assistant.webp" width="1280" height="800" loading="lazy" decoding="async" alt="The ML Study Assistant showing three cited sources with page numbers and scores, then refusing an off-topic question about baking a cake."></figure>
+        <p class="card__badge">Page-cited answers</p>
+        <h3>RAG ML Study Assistant</h3>
+        <p class="card__text">Reads PDFs with PyMuPDF and Tesseract OCR, searches them with FAISS, and answers with Qwen2.5-7B, citing the page.</p>
+        <div class="card__foot"><a class="card__link" href="https://github.com/Parth3557/RAG" target="_blank" rel="noopener">View code</a></div>
+      </li>
+      <li class="card" data-private>
+        <figure class="card__shot" data-track="project id:04"><img src="private-previews/gi-endoscopy.webp" width="1280" height="800" loading="lazy" decoding="async" alt="The GI endoscopy dashboard classifying a test image as a polyp, with class probabilities and the circular tissue crop the model sees."></figure>
+        <p class="card__badge">97.99% accuracy</p>
+        <h3>Artifact-Robust GI Endoscopy Classifier</h3>
+        <p class="card__text">FastViT-SA24 + GRL + DFR, with six release gates against shortcut learning. 97.79% on tissue alone, about chance on the border.</p>
+        <div class="card__foot"><p class="card__private">Research · paper under review · code on request</p></div>
+      </li>
+      <li class="card" data-private>
+        <figure class="card__shot" data-track="project id:05"><img src="private-previews/football-analytics.webp" width="1280" height="800" loading="lazy" decoding="async" alt="The football analytics prototype showing a processed match video with tracked players, team colours and a live minimap of the pitch."></figure>
+        <p class="card__badge">Low-cost video analytics</p>
+        <h3>Grassroots Football Talent Analytics</h3>
+        <p class="card__text">YOLO detection, BoT-SORT tracking, pitch calibration and RTS-smoothed kinematics turn plain video into player profiles.</p>
+        <div class="card__foot"><p class="card__private">Research · paper under review · code on request</p></div>
+      </li>
+      <li class="card">
+        <figure class="card__shot" data-track="project id:06"><img src="../../public/images/projects/neuroscan.webp" width="1280" height="800" loading="lazy" decoding="async" alt="NeuroScan showing an uploaded brain MRI and its predicted tumor class with a confidence score."></figure>
+        <p class="card__badge">98.07% test accuracy</p>
+        <h3>NeuroScan: Brain Tumor MRI Classifier</h3>
+        <p class="card__text">From-scratch ResNet-style CNN in a Flask app with accounts, history, an admin dashboard and Gemini summaries. Team project.</p>
+        <div class="card__foot"><a class="card__link" href="https://github.com/Parth3557/brain-cancer-detection" target="_blank" rel="noopener">View code</a></div>
+      </li>
+      <li class="card">
+        <figure class="card__shot" data-track="project id:07"><img src="../../public/images/projects/plant-classifier.webp" width="1280" height="800" loading="lazy" decoding="async" alt="The Plant Growth Stage Classifier labelling a pomegranate photo as mature, with a confidence bar for every growth stage."></figure>
+        <p class="card__badge">3 models compared</p>
+        <h3>Plant Growth Stage Classifier</h3>
+        <p class="card__text">EfficientNet-B0 (92%), ViT (89.75%) and ResNet50V2 (94%) side by side in one Flask + Docker app.</p>
+        <div class="card__foot"><a class="card__link" href="https://github.com/Parth3557/plant-growth-stage-classifier" target="_blank" rel="noopener">View code</a></div>
+      </li>
+      <li class="card">
+        <figure class="card__shot" data-track="project id:08"><img src="../../public/images/projects/english-coach.webp" width="1280" height="800" loading="lazy" decoding="async" alt="Screens from the English Coach Android app."></figure>
+        <p class="card__badge">Android, offline</p>
+        <h3>English Coach</h3>
+        <p class="card__text">Kotlin app with an A1–C2 path, spaced repetition, Vosk speech scoring and a Gemini speaking coach. Based on MIT-licensed Kotoba.</p>
+        <div class="card__foot"><a class="card__link" href="https://github.com/Parth3557/english-coach-android" target="_blank" rel="noopener">View code</a></div>
+      </li>
+    </ul>
+  </section>
+</main>
+
+<dialog class="glimpse" id="glimpse" aria-labelledby="glimpse-title" data-lenis-prevent>
+  <div class="glimpse__shade"></div>
+  <div class="glimpse__sheet">
+    <div class="glimpse__head">
+      <h2 id="glimpse-title">What have I built?</h2>
+      <button class="btn" type="button" data-glimpse-close autofocus>Close</button>
+    </div>
+    <div data-glimpse-cards></div>
+    <div class="glimpse__foot">
+      <span class="glimpse__hint">Scroll sideways for all 8 projects</span>
+      <a class="card__link" href="#projects" data-glimpse-all>See them all on the page</a>
+    </div>
+  </div>
+  <svg class="glimpse__flight" aria-hidden="true" focusable="false"><use id="shuttle3" href="#shuttle-shape"/></svg>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/MotionPathPlugin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/CustomEase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.27/dist/lenis.min.js"></script>
+<script src="shared.js"></script>
+<script>
+(async () => {
+  const root = document.documentElement;
+  const $ = (selector) => document.querySelector(selector);
+
+  // Screen coordinates are the SVG's units. Portrait swaps the court's axes.
+  const portrait = matchMedia('(max-aspect-ratio: 1/1)').matches;
+  const shortScreen = matchMedia('(max-aspect-ratio: 1/1) and (max-height: 700px), (min-aspect-ratio: 1/1) and (max-height: 500px)').matches;
+  const toScreen = (u, v) => (portrait ? [v, u] : [u, v]);
+  const WIDTH = portrait ? 610 : 1340;
+  const viewBox = portrait ? '0 0 610 1340' : '0 0 1340 610';
+  $('.plan').setAttribute('viewBox', viewBox);
+  $('.fx').setAttribute('viewBox', viewBox);
+  if (portrait) $('#lines').setAttribute('transform', 'matrix(0 1 1 0 0 0)');
+
+  // The line the name stands on and the shuttle lands on. The "?" is drawn in a 306x640 box
+  // whose bottom edge sits on this line, so the shuttle's cork becomes the dot of the "?".
+  const GROUND = portrait ? 868 : 564;
+  const MARK_SCALE = portrait ? 0.85 : 0.78125;
+  const MARK_RIGHT = portrait ? 600 : 1264;
+  const markX = (x) => MARK_RIGHT - (306 - x) * MARK_SCALE;
+  const markY = (y) => GROUND - (640 - y) * MARK_SCALE;
+  const HOOK = 'M36 176C36 88 94 32 166 32 240 32 288 86 288 152 288 214 248 248 208 282 176 310 160 340 160 392L160 452';
+  const REST_SIZE = 2.25 * MARK_SCALE; // makes the cork as wide as the stroke of the "?"
+  const REST = { x: markX(160), y: GROUND - 30 * REST_SIZE };
+
+  const hook = $('#hook');
+  const ground = $('#ground');
+  const ball = $('#ball');
+  const bird = $('#bird');
+  hook.setAttribute('d', HOOK.replace(/(\d+) (\d+)/g, (_, x, y) => `${markX(+x)} ${markY(+y)}`));
+  hook.setAttribute('stroke-width', 36 * MARK_SCALE);
+  ground.setAttribute('x2', WIDTH);
+  ground.setAttribute('y1', GROUND);
+  ground.setAttribute('y2', GROUND);
+  ball.setAttribute('transform', `translate(${REST.x} ${REST.y})`);
+  bird.setAttribute('transform', `rotate(90) scale(${REST_SIZE})`);
+
+  if (!window.gsap || !window.Lenis) return root.classList.remove('js-wait');
+
+  gsap.registerPlugin(ScrollTrigger, MotionPathPlugin, SplitText, CustomEase);
+  PJ.chrome();
+
+  let lenis = null;
+  let finishIntro = () => {};
+  setupGlimpse();
+
+  // Clicking Projects opens a panel of all the cards, which also works with reduced motion.
+  function setupGlimpse() {
+    const panel = $('#glimpse');
+    const section = $('#projects');
+    panel.querySelector('[data-glimpse-cards]').replaceWith(section.querySelector('.cards').cloneNode(true));
+
+    const sheet = panel.querySelector('.glimpse__sheet');
+    const shade = panel.querySelector('.glimpse__shade');
+    const strip = panel.querySelector('.cards');
+    const cards = gsap.utils.toArray(strip.children);
+    const flyer = $('#shuttle3');
+    let opening = null;
+    let tilt = null;
+    let closing = false;
+
+    function open(event) {
+      finishIntro();
+      lenis?.stop();
+      panel.showModal();
+      strip.scrollLeft = 0;
+      if (PJ.reduced()) return;
+
+      const from = { x: event.clientX || innerWidth / 2, y: event.clientY || 40 };
+      const shot = cards[0].querySelector('.card__shot').getBoundingClientRect();
+      const land = { x: shot.left + 34, y: shot.top + 8 };
+
+      // The camera tips back as the panel rises, and the shuttle carries the click onto the first card.
+      if (scrollY < 40) tilt = gsap.to('.court', { rotationX: '+=14', duration: 0.8, ease: 'expo.out' });
+      gsap.set(flyer, { svgOrigin: '0 0', scale: 0.9, autoAlpha: 1 });
+      opening = gsap.timeline()
+        .fromTo(shade, { opacity: 0 }, { opacity: 0.55, duration: 0.35, ease: 'power1.out' }, 0)
+        .fromTo(sheet, { yPercent: 100 }, { yPercent: 0, duration: 0.8, ease: 'expo.out' }, 0)
+        .fromTo(cards, { x: 140, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.9, ease: 'expo.out', stagger: 0.055 }, 0.1)
+        .to(flyer, {
+          duration: 0.75,
+          ease: 'power2.in',
+          motionPath: { path: `M${from.x} ${from.y}Q${(from.x + land.x) / 2} ${Math.min(from.y, land.y) - 90} ${land.x} ${land.y}`, autoRotate: true },
+        }, 0)
+        .to(flyer, { autoAlpha: 0, duration: 0.2 }, 0.75);
+    }
+
+    function close(afterClose) {
+      if (!panel.open || closing) return;
+      const done = () => {
+        panel.close();
+        closing = false;
+        lenis?.start();
+        if (typeof afterClose === 'function') afterClose();
+      };
+      if (PJ.reduced()) return done();
+
+      closing = true;
+      opening?.kill();
+      tilt?.reverse();
+      gsap.set(flyer, { autoAlpha: 0 });
+      gsap.timeline({ onComplete: done })
+        .to(sheet, { yPercent: 100, duration: 0.45, ease: 'power3.in' }, 0)
+        .to(shade, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 0.05);
+    }
+
+    document.querySelectorAll('[data-glimpse]').forEach((link) => link.addEventListener('click', (event) => {
+      event.preventDefault();
+      open(event);
+    }));
+    panel.querySelector('[data-glimpse-close]').addEventListener('click', () => close());
+    shade.addEventListener('click', () => close());
+    panel.addEventListener('cancel', (event) => { event.preventDefault(); close(); });
+    panel.querySelector('[data-glimpse-all]').addEventListener('click', (event) => {
+      event.preventDefault();
+      close(() => (lenis ? lenis.scrollTo(section, { immediate: true }) : section.scrollIntoView()));
+    });
+
+    // A mouse wheel moves the strip sideways. Trackpads and touch already can.
+    strip.addEventListener('wheel', (event) => {
+      if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+        strip.scrollLeft += event.deltaY;
+        event.preventDefault();
+      }
+    }, { passive: false });
+  }
+
+  if (PJ.reduced()) {
+    root.classList.remove('js-wait');
+    gsap.from('.hero', { opacity: 0, duration: 0.4 });
+    return;
+  }
+
+  root.classList.add('motion');
+  history.scrollRestoration = 'manual';
+  scrollTo(0, 0);
+  await PJ.fontsReady();
+  lenis = PJ.smoothScroll();
+
+  const shade = $('#shade');
+  const bbox = $('#bbox');
+  const tag = $('#tag');
+  const trail = $('#trail');
+  const hits = $('#hits');
+  const tail = $('#tail');
+  const flightPath = $('#flight');
+  const pulse = $('#pulse');
+  const fx = $('.fx');
+  const unit = gsap.utils.clamp(0, 1);
+  const rings = gsap.utils.toArray('.fx .ring');
+  const unitsPerPx = WIDTH / $('.court').getBoundingClientRect().width;
+  const RALLY_SIZE = portrait ? 1.3 : 1;
+  tag.setAttribute('font-size', 12 * unitsPerPx);
+  gsap.set(shade, { visibility: 'visible' });
+  gsap.set([bbox, tag], { opacity: 1 });
+
+  // Off the racket fast, hangs at the top of the hook, then the smash down the stem.
+  CustomEase.create('rally', 'M0,0 C0.1,0.32 0.2,0.42 0.38,0.5 0.58,0.58 0.74,0.64 1,1');
+
+  // Portrait mirrors the rally end for end, so the last shot climbs up into the "?".
+  const end = (u) => (portrait ? 1340 - u : u);
+  const START = toScreen(end(150), 470);
+  const SHOTS = [
+    { to: toScreen(end(1185), 130), height: 0.85, time: 0.46 },
+    { to: toScreen(end(205), 110), height: 1, time: 0.42 },
+  ];
+  const FLIGHT_TIME = 1.5;
+  const COMET = 300;
+
+  const last = SHOTS.at(-1).to;
+  const hookStart = { x: markX(36), y: markY(176) };
+  const tailD = portrait
+    ? `M${last[0]} ${last[1]}C${last[0]} ${last[1] - 340} ${hookStart.x} ${hookStart.y + 290} ${hookStart.x} ${hookStart.y}`
+    : `M${last[0]} ${last[1]}C${last[0] + 600} ${last[1] + 190} ${hookStart.x} ${hookStart.y + 150} ${hookStart.x} ${hookStart.y}`;
+  const hookD = hook.getAttribute('d');
+  tail.setAttribute('d', tailD);
+  flightPath.setAttribute('d', `${tailD}${hookD.replace(/^M[^C]+/, '')}L${REST.x} ${REST.y}`);
+  const tailLength = tail.getTotalLength();
+  const hookLength = hook.getTotalLength();
+  const flightLength = flightPath.getTotalLength();
+  hook.style.strokeDasharray = '1 1';
+
+  const pos = { x: START[0], y: START[1], height: 0, squash: 0, size: RALLY_SIZE, angle: 0, auto: true, trailing: true };
+  let lastX = null;
+  let lastY = null;
+  let points = [];
+
+  // Draws one frame of the tracked shuttle: position, apparent height, shadow and tight box.
+  function draw() {
+    if (pos.auto && lastX !== null && Math.hypot(pos.x - lastX, pos.y - lastY) > 0.5) {
+      pos.angle = Math.atan2(pos.y - lastY, pos.x - lastX) * 180 / Math.PI;
+    }
+    if (pos.trailing && (lastX === null || Math.hypot(pos.x - points.at(-1)[0], pos.y - points.at(-1)[1]) > 16)) {
+      points.push([pos.x, pos.y]);
+      trail.setAttribute('points', points.join(' '));
+    }
+    lastX = pos.x;
+    lastY = pos.y;
+
+    const scale = pos.size * (1 + pos.height * 0.6);
+    const radians = pos.angle * Math.PI / 180;
+    const cos = Math.abs(Math.cos(radians));
+    const sin = Math.abs(Math.sin(radians));
+    const w = (cos * 60 + sin * 36) * scale + 12;
+    const h = (sin * 60 + cos * 36) * scale + 12;
+
+    ball.setAttribute('transform', `translate(${pos.x} ${pos.y})`);
+    bird.setAttribute('transform', `rotate(${pos.angle}) scale(${scale * (1 - pos.squash * 0.2)} ${scale * (1 + pos.squash * 0.14)})`);
+    shade.setAttribute('transform', `translate(${8 + pos.height * 44} ${10 + pos.height * 56}) scale(${pos.size * (1 - pos.height * 0.3)})`);
+    bbox.setAttribute('x', -w / 2);
+    bbox.setAttribute('y', -h / 2);
+    bbox.setAttribute('width', w);
+    bbox.setAttribute('height', h);
+    // Near the right edge the label hangs from the box's other corner, so it never clips.
+    const flip = pos.x > WIDTH * 0.62;
+    tag.setAttribute('text-anchor', flip ? 'end' : 'start');
+    tag.setAttribute('x', flip ? w / 2 : -w / 2);
+    tag.setAttribute('y', -h / 2 - 5 * unitsPerPx);
+  }
+
+  // Keeps the thin trail and the "?" locked to the shuttle's place on the path.
+  function followFlight(travelled) {
+    const head = unit(travelled / tailLength);
+    const back = unit((travelled - COMET) / tailLength);
+    tail.style.strokeDasharray = `${head - back} 2`;
+    tail.style.strokeDashoffset = -back;
+    tail.style.visibility = head > back ? 'visible' : 'hidden'; // a zero-length round cap still draws a dot
+    hook.style.visibility = travelled > tailLength ? 'visible' : 'hidden';
+    hook.style.strokeDashoffset = 1 - unit((travelled - tailLength) / hookLength);
+  }
+
+  const rank = $('.rank__n');
+  const count = { n: 38 };
+  const showCount = () => { rank.textContent = Math.round(count.n).toLocaleString('en-US'); };
+  const nameLines = gsap.utils.toArray('.name__line');
+  const firstName = SplitText.create(nameLines[0], { type: 'chars' }).chars;
+  const lastName = SplitText.create(nameLines[1], { type: 'chars' }).chars;
+  const fontSize = parseFloat(getComputedStyle($('.name')).fontSize);
+  const lines = gsap.utils.toArray('#lines line:not(#net)');
+
+  rings.forEach((ring) => { ring.setAttribute('cx', REST.x); ring.setAttribute('cy', GROUND); });
+  pulse.setAttribute('x1', 0);
+  pulse.setAttribute('x2', REST.x);
+  pulse.setAttribute('y1', GROUND);
+  pulse.setAttribute('y2', GROUND);
+
+  const fly = { travelled: 0 };
+  const intro = gsap.timeline({ paused: true });
+
+  // 1. The court draws itself.
+  intro.fromTo('#surface', { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power1.out' }, 0);
+  lines.forEach((line, i) => {
+    const [x1, y1, , y2] = ['x1', 'y1', 'x2', 'y2'].map((name) => +line.getAttribute(name));
+    const axis = y1 === y2 ? 'scaleX' : 'scaleY';
+    intro.fromTo(line, { [axis]: 0, svgOrigin: `${x1} ${y1}` }, { [axis]: 1, duration: 0.6, ease: 'expo.inOut' }, 0.02 + i * 0.022);
+  });
+  intro
+    .fromTo('#net', { scaleY: 0, svgOrigin: '670 305' }, { scaleY: 1, duration: 0.4, ease: 'back.out(2)' }, 0.34)
+    .fromTo(ground, { scaleX: 0, svgOrigin: `0 ${GROUND}` }, { scaleX: 1, duration: 0.7, ease: 'expo.inOut' }, 0.06)
+    .set(ball, { visibility: 'visible' }, 0.44);
+
+  // 2. The rally: each exchange brings up part of the name.
+  let t = 0.48;
+  const shotStart = [];
+  SHOTS.forEach((shot, i) => {
+    shotStart[i] = t;
+    intro
+      .to(pos, { x: shot.to[0], y: shot.to[1], duration: shot.time, ease: 'power2.out', onUpdate: draw }, t)
+      .to(pos, { height: shot.height, duration: shot.time * 0.45, ease: 'power2.out' }, t)
+      .to(pos, { height: 0.12, duration: shot.time * 0.55, ease: 'power2.in' }, t + shot.time * 0.45)
+      .call(() => {
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('cx', shot.to[0]);
+        dot.setAttribute('cy', shot.to[1]);
+        dot.setAttribute('r', 3.5 * unitsPerPx);
+        hits.append(dot);
+      }, null, t + shot.time);
+    t += shot.time;
+  });
+
+  const rise = { yPercent: 0, duration: 0.7, ease: 'expo.out', stagger: 0.024 };
+  const enter = { y: 0, autoAlpha: 1, duration: 0.8, ease: 'expo.out' };
+  intro
+    .fromTo(firstName, { yPercent: 105 }, rise, shotStart[0] + 0.06)
+    .fromTo(lastName, { yPercent: 105 }, rise, shotStart[1] + 0.06);
+
+  // 3. The last shot goes high: its flight draws the "?" and the smash comes down the stem.
+  const flightStart = t;
+  intro
+    .call(() => { pos.trailing = false; }, null, flightStart)
+    .to(fly, {
+      travelled: flightLength,
+      duration: FLIGHT_TIME,
+      ease: 'rally',
+      onUpdate() {
+        const point = flightPath.getPointAtLength(fly.travelled);
+        pos.x = point.x;
+        pos.y = point.y;
+        followFlight(fly.travelled);
+        draw();
+      },
+    }, flightStart)
+    .to(pos, { size: REST_SIZE, duration: FLIGHT_TIME, ease: 'power2.in' }, flightStart)
+    .to(pos, { height: 0.9, duration: FLIGHT_TIME * 0.5, ease: 'power2.out' }, flightStart)
+    .to(pos, { height: 0, duration: FLIGHT_TIME * 0.5, ease: 'power2.in' }, flightStart + FLIGHT_TIME * 0.5)
+    .to([trail, hits], { opacity: 0, duration: 0.6, ease: 'power1.out' }, flightStart + 0.15)
+    .fromTo('.why', { y: 22, autoAlpha: 0 }, enter, flightStart + 0.1)
+    .fromTo('.who', { y: 16, autoAlpha: 0 }, enter, flightStart + 0.28)
+    .addLabel('impact', flightStart + FLIGHT_TIME)
+
+    // 4. The smash: everything answers the hit at once.
+    .call(() => {
+      pos.auto = false;
+      pos.angle = 90;
+      fx.classList.add('is-smash');
+      tag.textContent = 'in';
+    }, null, 'impact')
+    .to(shade, { opacity: 0, duration: 0.15 }, 'impact')
+    .to('.court', { keyframes: { x: [0, -10, 8, -5, 3, 0], y: [0, 7, -6, 3, -1, 0], easeEach: 'sine.inOut' }, duration: 0.46, ease: 'none' }, 'impact')
+    .fromTo(rings, { scale: 0.15, opacity: 0, svgOrigin: `${REST.x} ${GROUND}` }, { opacity: 0.95, duration: 0.01 }, 'impact')
+    .to(rings, { scale: 5.5, opacity: 0, duration: 0.95, ease: 'expo.out', stagger: 0.08 }, 'impact+=0.01')
+    .fromTo(pos, { squash: 1 }, { squash: 0, duration: 0.6, ease: 'elastic.out(1, .4)', onUpdate: draw, immediateRender: false }, 'impact')
+    .to(pos, {
+      keyframes: [
+        { y: REST.y - 42, angle: 81, duration: 0.17, ease: 'power2.out' },
+        { y: REST.y, angle: 95, duration: 0.2, ease: 'power2.in' },
+        { y: REST.y - 8, angle: 88, duration: 0.09, ease: 'power1.out' },
+        { y: REST.y, angle: 90, duration: 0.12, ease: 'power1.in' },
+      ],
+      onUpdate: draw,
+    }, 'impact')
+    // The hit runs along the court line and through the name, nearest letter first.
+    .fromTo(pulse, { scaleX: 0, opacity: 0, svgOrigin: `${REST.x} ${GROUND}` }, { scaleX: 1, opacity: 1, duration: 0.6, ease: 'power3.out' }, 'impact')
+    .to(pulse, { opacity: 0, duration: 0.35, ease: 'power1.in' }, 'impact+=0.3')
+    .to(lastName, {
+      keyframes: [
+        { y: -fontSize * 0.09, duration: 0.12, ease: 'power2.out' },
+        { y: 0, duration: 0.42, ease: 'bounce.out' },
+      ],
+      stagger: { each: 0.018, from: 'end' },
+    }, 'impact')
+    .fromTo('.rank', { y: 18, autoAlpha: 0 }, { ...enter, immediateRender: false }, 'impact')
+    // A rank is climbed, not counted, so the number falls from the size of the field to 38.
+    .fromTo(count, { n: 9000 }, { n: 38, duration: 1.2, ease: 'expo.out', onUpdate: showCount, immediateRender: false }, 'impact')
+    .fromTo('.cta, .social', { y: 18, autoAlpha: 0 }, { ...enter, immediateRender: false }, 'impact+=0.12')
+    // The tracker's job is done. It comes back when someone hovers the shuttle.
+    .to([bbox, tag], { opacity: 0, duration: 0.5, ease: 'power1.inOut' }, 'impact+=1.5')
+    .call(setupScroll);
+
+  function resetIntro() {
+    points = [];
+    lastX = null;
+    lastY = null;
+    Object.assign(pos, { x: START[0], y: START[1], height: 0, squash: 0, size: RALLY_SIZE, angle: 0, auto: true, trailing: true });
+    fly.travelled = 0;
+    hits.replaceChildren();
+    trail.setAttribute('points', '');
+    gsap.set([trail, hits, bbox, tag], { opacity: 1 });
+    gsap.set(shade, { opacity: 0.16 });
+    fx.classList.remove('is-smash');
+    tag.textContent = 'shuttle id:38';
+    followFlight(0);
+    gsap.set(['.rank', '.cta', '.social'], { autoAlpha: 0 });
+    gsap.set(ball, { visibility: 'hidden' });
+    draw();
+  }
+
+  finishIntro = () => { if (intro.isActive()) intro.progress(1); };
+  resetIntro();
+  root.classList.remove('js-wait');
+  await PJ.whenVisible();
+  intro.play();
+
+  const serve = $('.serve');
+  serve.addEventListener('click', () => {
+    if (intro.isActive() || scrollY > 4) return;
+    intro.pause(0);
+    resetIntro();
+    intro.restart();
+  });
+  const showTracker = (on) => {
+    if (!intro.isActive()) gsap.to([bbox, tag], { opacity: on ? 1 : 0, duration: 0.25, overwrite: 'auto' });
+  };
+  ['pointerenter', 'focus'].forEach((type) => serve.addEventListener(type, () => { tag.textContent = 'shuttle id:38'; fx.classList.remove('is-smash'); showTracker(true); }));
+  ['pointerleave', 'blur'].forEach((type) => serve.addEventListener(type, () => showTracker(false)));
+
+  // Scrolling during the intro finishes it straight away instead of fighting the visitor.
+  lenis.on('scroll', () => { if (intro.isActive() && scrollY > 2) intro.progress(1); });
+
+  // 5. Scroll tips the camera to a broadcast view, then the shuttle lifts away into the journey.
+  let scrollReady = false;
+  function setupScroll() {
+    if (scrollReady) return;
+    scrollReady = true;
+
+    if (!shortScreen) {
+      gsap.timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: { trigger: '.runway', start: 'top top', end: 'bottom bottom', scrub: true },
+      })
+        // Pivots on the near edge, so the text below the court never grows off the sides of the screen.
+        .to('.court', { rotationX: portrait ? 54 : 64, scale: portrait ? 0.92 : 0.98, transformOrigin: portrait ? '50% 100%' : '50% 112%', duration: 1 }, 0)
+        .to(pos, { angle: -90, duration: 0.12, onUpdate: draw }, 0.55)
+        .to(pos, { y: -320, duration: 0.45, ease: 'power2.in', onUpdate: draw }, 0.55);
+    }
+
+    const projectCards = gsap.utils.toArray('#projects .card');
+    gsap.set(projectCards, { y: 36, autoAlpha: 0 });
+    ScrollTrigger.batch(projectCards, {
+      start: 'top 90%',
+      once: true,
+      onEnter: (batch) => gsap.to(batch, { y: 0, autoAlpha: 1, duration: 0.9, ease: 'expo.out', stagger: 0.07 }),
+    });
+
+    // A short screen reads the journey as a plain list.
+    if (shortScreen) return ScrollTrigger.refresh();
+
+    const shuttle2 = $('#shuttle2');
+    const section = $('.stops');
+    const stage = $('.stops__sticky');
+    const svg = $('.stops__flight');
+    const stops = gsap.utils.toArray('.stop');
+    const stageBox = stage.getBoundingClientRect();
+    const dots = stops.map((stop) => {
+      const dot = stop.querySelector('.stop__dot').getBoundingClientRect();
+      return { x: dot.left + dot.width / 2 - stageBox.left, y: dot.top + dot.height / 2 - stageBox.top };
+    });
+    svg.setAttribute('viewBox', `0 0 ${stageBox.width} ${stageBox.height}`);
+
+    const vertical = matchMedia('(max-width: 1000px)').matches;
+    const SHUTTLE_PX = vertical ? 34 : 46;
+    const add = (name, attrs) => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', name);
+      Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+      svg.insertBefore(el, svg.firstChild);
+      return el;
+    };
+    const hops = dots.slice(1).map((to, i) => {
+      const from = dots[i];
+      // On phones the arcs stay in the channel between the line and the text.
+      const control = vertical
+        ? `${from.x + 70} ${(from.y + to.y) / 2}`
+        : `${(from.x + to.x) / 2} ${from.y - (i === 2 ? 40 : 170)}`;
+      const d = `M${from.x} ${from.y}Q${control} ${to.x} ${to.y}`;
+      // add() prepends, so adding the live arc first leaves the dotted guide underneath it.
+      const live = add('path', { class: 'hop-live', d, pathLength: 1, 'stroke-dasharray': '1 1', 'stroke-dashoffset': 1 });
+      add('path', { class: 'hop-ghost', d });
+      return live;
+    });
+
+    gsap.set(stops.slice(1), { opacity: 0.22 });
+    gsap.set(shuttle2, { svgOrigin: '0 0', x: dots[0].x, y: -80, scale: SHUTTLE_PX / 60 });
+
+    // Each rank falls from the size of that year's field to the place the team finished.
+    const climbs = gsap.utils.toArray('.stop-rank__n').map((el) => {
+      const state = { n: +el.dataset.from };
+      const show = () => { el.textContent = Math.round(state.n).toLocaleString('en-US'); };
+      show();
+      return { state, show, to: +el.dataset.to };
+    });
+    const climbTo = (climb, at) => rally.to(climb.state, { n: climb.to, duration: 0.9, ease: 'expo.out', onUpdate: climb.show }, at);
+
+    const ring = $('#smash-ring');
+    gsap.set(ring, { attr: { cx: dots[3].x, cy: dots[3].y } });
+
+    const rally = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: {
+        trigger: section,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: true,
+        onUpdate: (self) => { shuttle2.style.visibility = self.progress > 0 ? 'visible' : 'hidden'; },
+      },
+    });
+
+    // It comes back down from the high clear onto the first stop.
+    rally.to(shuttle2, {
+      duration: 0.6,
+      ease: 'power2.in',
+      motionPath: { path: `M${dots[0].x + 260} -80Q${dots[0].x + 120} ${dots[0].y * 0.3} ${dots[0].x} ${dots[0].y}`, autoRotate: true },
+    }, 0);
+
+    const hopStart = (i) => 0.75 + i * 1.5;
+    hops.forEach((path, i) => {
+      const smash = i === 2;
+      const ease = smash ? 'power3.in' : 'power2.inOut';
+      const at = hopStart(i);
+      rally
+        .to(shuttle2, { duration: smash ? 0.8 : 1, ease, motionPath: { path, autoRotate: true } }, at)
+        .to(path, { strokeDashoffset: 0, duration: smash ? 0.8 : 1, ease }, at)
+        .to(stops[i + 1], { opacity: 1, duration: 0.3 }, at + 0.7);
+    });
+
+    const hit = hopStart(2) + 0.8;
+    climbTo(climbs[0], hit);
+    climbTo(climbs[1], hopStart(3) + 0.75);
+    rally
+      .call(() => {
+        if (rally.scrollTrigger.direction > 0) {
+          gsap.to('.stops__list', { keyframes: { x: [0, -8, 7, -4, 2, 0], y: [0, 6, -5, 3, -1, 0] }, duration: 0.42, ease: 'none' });
+        }
+      }, null, hit)
+      .fromTo(ring, { scale: 0.2, opacity: 0, svgOrigin: `${dots[3].x} ${dots[3].y}` }, { opacity: 0.9, duration: 0.01 }, hit)
+      .to(ring, { scale: 7, opacity: 0, duration: 0.7, ease: 'expo.out' }, hit + 0.01)
+      .to({}, { duration: 0.5 });
+
+    ScrollTrigger.refresh();
+  }
+})();
+</script>
+</body>
+</html>

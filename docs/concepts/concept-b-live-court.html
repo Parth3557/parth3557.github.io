@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concept B: The live court</title>
+<script>
+  (function () {
+    var root = document.documentElement, saved = null;
+    try { saved = localStorage.getItem('theme'); } catch (e) {}
+    root.dataset.theme = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    root.classList.add('js', 'js-wait');
+    setTimeout(function () { root.classList.remove('js-wait'); }, 3500);
+  })();
+</script>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=satoshi@400,500,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="shared.css">
+<style>
+  :root { --court-line: var(--bg); --strip: 112px; }
+  [data-theme="dark"] { --court-line: #34322D; }
+
+  .nav { position: absolute; left: 0; right: 0; top: 0; }
+
+  .hero { position: relative; padding-top: var(--nav-h); padding-bottom: 24px; }
+  .floor {
+    min-height: calc(100svh - var(--nav-h) - 24px);
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    perspective: 1500px;
+    perspective-origin: 50% 25%;
+  }
+
+  /* The plane everything is painted on. A real court is 13.4 x 6.1 m, close to the shape of
+     a laptop screen one way and a phone the other, so it turns with the device. */
+  .court {
+    --w: min(100vw - 2 * var(--gutter), (100svh - var(--nav-h) - var(--strip) - 24px) * 2.1967);
+    position: relative;
+    width: var(--w);
+    aspect-ratio: 1340 / 610;
+    container-type: inline-size;
+    margin-bottom: var(--strip);
+  }
+  .plan, .fx { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .fx { z-index: 3; pointer-events: none; }
+  #surface { fill: var(--surface); }
+  #lines line { stroke: var(--court-line); stroke-width: 3px; vector-effect: non-scaling-stroke; }
+  #net { stroke: var(--ink); stroke-width: 2px; vector-effect: non-scaling-stroke; stroke-dasharray: 1 5; stroke-linecap: round; }
+
+  .shuttle__skirt { fill: var(--bg); stroke: var(--ink); stroke-width: 1.3; stroke-linejoin: round; }
+  .shuttle__rib { fill: none; stroke: var(--ink); stroke-width: .75; opacity: .6; }
+  .shuttle__cork { fill: var(--accent); }
+  #shade { fill: var(--ink); opacity: .16; }
+  #bbox { fill: none; stroke: var(--accent-2); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+  #tag { fill: var(--accent-2); font-family: var(--font-mono); font-weight: 500; }
+  .is-smash #bbox { stroke: var(--accent); }
+  .is-smash #tag { fill: var(--accent-text); }
+  #trail { fill: none; stroke: var(--accent); stroke-width: 1.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+  #hits circle { fill: var(--accent); }
+  .ring { fill: none; stroke: var(--accent); stroke-width: 2.5px; vector-effect: non-scaling-stroke; opacity: 0; }
+  #ball { visibility: hidden; }
+
+  /* Text sits in the court's own zones and tilts with it. */
+  .name { position: absolute; inset: 0; z-index: 2; margin: 0; font: 600 10.9cqw/1 var(--font-display); letter-spacing: .008em; font-kerning: none; text-rendering: optimizeSpeed; white-space: nowrap; }
+  .name__line { position: absolute; left: 7.2%; display: block; height: .82em; clip-path: inset(-1em -.2em -.03em -.2em); }
+  .name__line:first-child { bottom: calc(50% + .03em); }
+  .name__line:last-child { top: calc(50% + .03em); }
+
+  .why {
+    position: absolute;
+    z-index: 2;
+    left: 66.3%;
+    right: 7.2%;
+    top: 10.5%;
+    margin: 0;
+    font: 500 2.2cqw/1.16 var(--font-display);
+    letter-spacing: .005em;
+    text-wrap: balance;
+  }
+  .rank { position: absolute; z-index: 2; left: 51.6%; width: 12%; top: 52.5%; }
+  .rank__n { display: block; font: 600 6.4cqw/1 var(--font-display); color: var(--accent-text); }
+  .rank__of { display: block; margin-top: .4em; font: 500 max(12px, .92cqw)/1.3 var(--font-mono); color: var(--muted-text); }
+
+  .serve {
+    position: absolute;
+    z-index: 4;
+    left: 57.5%;
+    top: 35.2%;
+    width: 110px;
+    height: 110px;
+    margin: -55px 0 0 -55px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .serve .fact { right: 20%; bottom: 100%; }
+
+  .who { position: absolute; left: 0; top: calc(100% + 18px); margin: 0; color: var(--muted-text); line-height: 1.35; text-wrap: balance; }
+  .who strong { display: block; margin-bottom: .15em; color: var(--ink); font: 600 clamp(1.15rem, 1.75vw, 1.7rem)/1.15 var(--font-display); letter-spacing: .005em; }
+  .cta { position: absolute; right: 0; top: calc(100% + 20px); display: flex; gap: 12px; }
+
+  .next { position: relative; z-index: 5; background: var(--bg); padding: clamp(60px, 10vh, 110px) var(--gutter) 120px; }
+  .next h2 { margin: 0 0 40px; font: 600 clamp(2.6rem, 6.4vw, 6rem)/1 var(--font-display); letter-spacing: .005em; }
+  .works { margin: 0; padding: 0; list-style: none; }
+  .works li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 40px; padding: 22px 0; border-top: 1px solid var(--line); }
+  .works h3 { margin: 0; font: 600 clamp(1.3rem, 2.2vw, 2rem)/1.1 var(--font-display); }
+  .works p { margin: 0; color: var(--muted-text); }
+
+  .js .runway { height: 190vh; }
+  .js .hero { position: sticky; top: 0; height: 100svh; overflow: clip; }
+  html:not(.js) .plan { display: none; }
+  html:not(.js) .court { background: var(--surface); }
+
+  .js-wait .name__line, .js-wait .plan, .js-wait .who, .js-wait .why, .js-wait .rank, .js-wait .cta { visibility: hidden; }
+
+  /* Portrait: the court turns 90 degrees. Net across the middle, one half above and one below. */
+  @media (max-aspect-ratio: 1/1) {
+    :root { --strip: 0px; }
+    .hero { padding-bottom: 10px; }
+    .court {
+      --w: min(100vw - 2 * var(--gutter), (100svh - var(--nav-h) - 14px) / 2.1967);
+      aspect-ratio: 610 / 1340;
+      margin-bottom: 0;
+    }
+    .name { font-size: 20cqw; }
+    .name__line { left: 9.5%; }
+    .name__line:first-child { bottom: calc(64.8% + .77em); }
+    .name__line:last-child { top: auto; bottom: calc(64.8% + .03em); }
+    .who { left: 9.5%; right: 9.5%; top: 37.6%; font-size: max(13px, 4.1cqw); }
+    .rank { left: 9.5%; right: 9.5%; width: auto; top: 51.2%; }
+    .rank__n { font-size: 15cqw; }
+    .rank__of { margin-top: .25em; font-size: max(12px, 3.4cqw); }
+    .why { left: 9.5%; right: 9.5%; top: 66.5%; font-size: 6.5cqw; }
+    .cta { left: 9.5%; right: 9.5%; top: auto; bottom: 7.4%; flex-direction: column; gap: 8px; }
+    .cta .btn { min-height: 44px; }
+    .serve { left: 73.8%; top: 14.2%; }
+    .serve .fact { left: auto; right: 0; bottom: auto; top: 96%; }
+    .works li { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="cursor" aria-hidden="true"><div class="cursor__dot"></div><div class="cursor__q">?</div></div>
+
+<header class="nav">
+  <a class="nav__logo" href="#" aria-label="Parth Jadhav, home">PJ</a>
+  <div class="nav__right">
+    <nav aria-label="Main">
+      <ul class="nav__links">
+        <li><a href="#next">Journey</a></li>
+        <li><a href="#next">Projects</a></li>
+        <li><a href="#next">About</a></li>
+        <li><a href="#next">Experience</a></li>
+        <li><a href="#next">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="nav__menu" type="button">Menu</button>
+    <button class="toggle" type="button" data-theme-toggle aria-label="Switch colour theme">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="runway">
+    <section class="hero">
+      <div class="floor">
+        <div class="court">
+          <!-- Drawn in metres x 100, so one unit is a real centimetre. -->
+          <svg class="plan" viewBox="0 0 1340 610" aria-hidden="true" focusable="false">
+            <g id="lines">
+              <rect id="surface" width="1340" height="610"/>
+              <line x1="0" y1="0" x2="1340" y2="0"/>
+              <line x1="0" y1="610" x2="1340" y2="610"/>
+              <line x1="0" y1="0" x2="0" y2="610"/>
+              <line x1="1340" y1="0" x2="1340" y2="610"/>
+              <line x1="0" y1="46" x2="1340" y2="46"/>
+              <line x1="0" y1="564" x2="1340" y2="564"/>
+              <line x1="76" y1="0" x2="76" y2="610"/>
+              <line x1="1264" y1="0" x2="1264" y2="610"/>
+              <line x1="472" y1="0" x2="472" y2="610"/>
+              <line x1="868" y1="0" x2="868" y2="610"/>
+              <line x1="0" y1="305" x2="472" y2="305"/>
+              <line x1="868" y1="305" x2="1340" y2="305"/>
+              <line id="net" x1="670" y1="-16" x2="670" y2="626"/>
+            </g>
+            <polyline id="trail"/>
+            <g id="hits"></g>
+          </svg>
+
+          <h1 class="name"><span class="name__line">Parth</span> <span class="name__line">Jadhav</span></h1>
+          <p class="why">Every project starts with a &ldquo;why?&rdquo; and ends with something I can deploy.</p>
+          <p class="rank"><span class="rank__n">38</span><span class="rank__of">All India Rank of 9,000+ teams, Amazon ML Challenge 2025</span></p>
+          <p class="who"><strong>AI / ML Engineer</strong>M.Sc. AI &amp; ML student at VIT Vellore, from Kolhapur</p>
+          <div class="cta">
+            <a class="btn btn--primary" href="#next" data-magnetic>See what I've built</a>
+            <a class="btn" href="#next" data-magnetic>Follow the journey</a>
+          </div>
+
+          <svg class="fx" viewBox="0 0 1340 610" aria-hidden="true" focusable="false">
+            <defs>
+              <!-- Drawn pointing along +x, cork first, centred on 0,0. -->
+              <g id="shuttle-shape">
+                <path class="shuttle__skirt" d="M12-7.4-26-17.5C-28-14-27-12-29-9.2-30.6-6.6-29-4.6-30-2.2-30.6 0-30.6 0-30 2.2-29 4.6-30.6 6.6-29 9.2-27 12-28 14-26 17.5L12 7.4Z"/>
+                <path class="shuttle__rib" d="M12-4.4-29-9.2M12-1.5-30-2.2M12 1.5-30 2.2M12 4.4-29 9.2"/>
+                <path class="shuttle__rib" d="M-3-12.2Q-.4 0-3 12.2M-8.5-13.7Q-5.4 0-8.5 13.7"/>
+                <path class="shuttle__cork" d="M11-8C23-8 30-4.6 30 0 30 4.6 23 8 11 8 9.4 8 9.4-8 11-8Z"/>
+              </g>
+            </defs>
+            <ellipse class="ring" rx="34" ry="34"/>
+            <ellipse class="ring" rx="34" ry="34"/>
+            <g id="ball">
+              <ellipse id="shade" rx="26" ry="9"/>
+              <g id="bird"><use href="#shuttle-shape"/></g>
+              <rect id="bbox" rx="2"/>
+              <text id="tag">shuttle id:38</text>
+            </g>
+          </svg>
+
+          <button class="serve" type="button" data-curious aria-label="Play the rally again. Hidden fact: rank 38 came from a BERT and Vision Transformer model that predicts product prices.">
+            <span class="fact" aria-hidden="true">Rank 38 came from a BERT + ViT model that predicts product prices. Click to play the rally again.</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="next" id="next">
+    <h2>What have I built?</h2>
+    <ul class="works">
+      <li><h3>Multimodal Product Price Predictor</h3><p>BERT + ViT dual encoder. Amazon ML Challenge 2025, All India Rank 38 of 9,000+ teams.</p></li>
+      <li><h3>AI-Powered Learning Path Generator</h3><p>Knowledge graph + DAG + RAG + XAI. IET SET conference paper.</p></li>
+      <li><h3>RAG ML Study Assistant</h3><p>Answers questions from academic PDFs and cites the page, with FAISS and Qwen2.5-7B.</p></li>
+    </ul>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.27/dist/lenis.min.js"></script>
+<script src="shared.js"></script>
+<script>
+(async () => {
+  const root = document.documentElement;
+  const $ = (selector) => document.querySelector(selector);
+
+  // The drawing stays in court coordinates. Portrait only swaps the axes.
+  const portrait = matchMedia('(max-aspect-ratio: 1/1)').matches;
+  const toScreen = (u, v) => (portrait ? [v, u] : [u, v]);
+  const viewBox = portrait ? '0 0 610 1340' : '0 0 1340 610';
+  $('.plan').setAttribute('viewBox', viewBox);
+  $('.fx').setAttribute('viewBox', viewBox);
+  if (portrait) $('#lines').setAttribute('transform', 'matrix(0 1 1 0 0 0)');
+
+  const showStatic = () => root.classList.remove('js', 'js-wait');
+  if (!window.gsap || !window.Lenis) return showStatic();
+
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+  PJ.chrome();
+
+  // Landscape smashes just over the net, above the rank. Portrait has no room there, so the
+  // rally is mirrored end for end and the smash lands in the empty space above the name.
+  const end = (u) => (portrait ? 1340 - u : u);
+  const LAND = portrait ? [190, 450] : [770, 215];
+  const START = [end(150), 470];
+  const SHOTS = [
+    { to: [end(1185), 130], height: 0.85, time: 0.6 },
+    { to: [end(205), 110], height: 1, time: 0.6 },
+    { to: [end(1120), 505], height: 0.5, time: 0.44 },
+    { to: [end(300), 505], height: 1.15, time: 0.5 },
+    { to: LAND, height: 0, time: 0.2, smash: true },
+  ];
+
+  const ball = $('#ball');
+  const bird = $('#bird');
+  const shade = $('#shade');
+  const bbox = $('#bbox');
+  const tag = $('#tag');
+  const trail = $('#trail');
+  const hits = $('#hits');
+  const rings = gsap.utils.toArray('.fx .ring');
+
+  const courtWidth = $('.court').getBoundingClientRect().width;
+  const unitsPerPx = (portrait ? 610 : 1340) / courtWidth; // court units in one screen pixel
+  const BASE_SCALE = portrait ? 1.3 : 1;
+  tag.setAttribute('font-size', 12 * unitsPerPx);
+
+  const flight = { u: START[0], v: START[1], height: 0, squash: 0, angle: 0 };
+  let lastX = null;
+  let lastY = null;
+  let points = [];
+
+  // Draws one frame of the tracked shuttle: position, apparent height, shadow and tight box.
+  function draw() {
+    const [x, y] = toScreen(flight.u, flight.v);
+    if (lastX !== null && Math.hypot(x - lastX, y - lastY) > 0.5) {
+      flight.angle = Math.atan2(y - lastY, x - lastX) * 180 / Math.PI;
+    }
+    if (lastX === null || Math.hypot(x - points.at(-1)[0], y - points.at(-1)[1]) > 16) {
+      points.push([x, y]);
+      trail.setAttribute('points', points.join(' '));
+    }
+    lastX = x;
+    lastY = y;
+
+    const scale = BASE_SCALE * (1 + flight.height * 0.75);
+    const radians = flight.angle * Math.PI / 180;
+    const cos = Math.abs(Math.cos(radians));
+    const sin = Math.abs(Math.sin(radians));
+    const w = (cos * 60 + sin * 36) * scale + 12;
+    const h = (sin * 60 + cos * 36) * scale + 12;
+
+    ball.setAttribute('transform', `translate(${x} ${y})`);
+    bird.setAttribute('transform', `rotate(${flight.angle}) scale(${scale * (1 - flight.squash * 0.2)} ${scale * (1 + flight.squash * 0.14)})`);
+    shade.setAttribute('transform', `translate(${8 + flight.height * 44} ${10 + flight.height * 56}) scale(${BASE_SCALE * (1 - flight.height * 0.3)})`);
+    bbox.setAttribute('x', -w / 2);
+    bbox.setAttribute('y', -h / 2);
+    bbox.setAttribute('width', w);
+    bbox.setAttribute('height', h);
+    tag.setAttribute('x', -w / 2);
+    tag.setAttribute('y', -h / 2 - 5 * unitsPerPx);
+  }
+
+  const rank = $('.rank__n');
+  const count = { n: 38 };
+  const showCount = () => { rank.textContent = Math.round(count.n).toLocaleString('en-US'); };
+
+  if (PJ.reduced()) {
+    flight.u = LAND[0];
+    flight.v = LAND[1];
+    draw();
+    trail.setAttribute('points', '');
+    $('.fx').classList.add('is-smash');
+    tag.textContent = 'in';
+    gsap.set(ball, { visibility: 'visible' });
+    root.classList.remove('js-wait');
+    gsap.from('.hero', { opacity: 0, duration: 0.4 });
+    return;
+  }
+
+  history.scrollRestoration = 'manual';
+  scrollTo(0, 0);
+  await PJ.fontsReady();
+  const lenis = PJ.smoothScroll();
+
+  const lines = gsap.utils.toArray('#lines line:not(#net)');
+  const nameLines = gsap.utils.toArray('.name__line');
+  const firstName = SplitText.create(nameLines[0], { type: 'chars' }).chars;
+  const lastName = SplitText.create(nameLines[1], { type: 'chars' }).chars;
+  const [landX, landY] = toScreen(LAND[0], LAND[1]);
+  rings.forEach((ring) => { ring.setAttribute('cx', landX); ring.setAttribute('cy', landY); });
+
+  const intro = gsap.timeline({ paused: true });
+  intro.fromTo('#surface', { opacity: 0 }, { opacity: 1, duration: 0.45, ease: 'power1.out' }, 0);
+
+  lines.forEach((line, i) => {
+    const [x1, y1, , y2] = ['x1', 'y1', 'x2', 'y2'].map((name) => +line.getAttribute(name));
+    const axis = y1 === y2 ? 'scaleX' : 'scaleY';
+    intro.fromTo(line, { [axis]: 0, svgOrigin: `${x1} ${y1}` }, { [axis]: 1, duration: 0.75, ease: 'expo.inOut' }, 0.04 + i * 0.03);
+  });
+  intro.fromTo('#net', { scaleY: 0, svgOrigin: '670 305' }, { scaleY: 1, duration: 0.45, ease: 'back.out(2)' }, 0.5);
+  intro.set(ball, { visibility: 'visible' }, 0.72);
+
+  let t = 0.75;
+  const shotStart = [];
+  SHOTS.forEach((shot, i) => {
+    shotStart[i] = t;
+    intro.to(flight, { u: shot.to[0], v: shot.to[1], duration: shot.time, ease: shot.smash ? 'power3.in' : 'power2.out', onUpdate: draw }, t);
+    if (shot.smash) {
+      intro.to(flight, { height: 0, duration: shot.time, ease: 'power3.in' }, t);
+    } else {
+      intro.to(flight, { height: shot.height, duration: shot.time * 0.45, ease: 'power2.out' }, t);
+      intro.to(flight, { height: 0.12, duration: shot.time * 0.55, ease: 'power2.in' }, t + shot.time * 0.45);
+    }
+    if (!shot.smash) {
+      intro.call(() => {
+        const [x, y] = toScreen(shot.to[0], shot.to[1]);
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('cx', x);
+        dot.setAttribute('cy', y);
+        dot.setAttribute('r', 3.5 * unitsPerPx);
+        hits.append(dot);
+      }, null, t + shot.time);
+    }
+    t += shot.time;
+  });
+
+  // Each exchange brings on one piece of the page; the smash brings the proof.
+  const rise = { yPercent: 0, duration: 0.7, ease: 'expo.out', stagger: 0.022 };
+  const enter = { y: 0, autoAlpha: 1, duration: 0.8, ease: 'expo.out' };
+  intro
+    .fromTo(firstName, { yPercent: 105 }, rise, shotStart[0] + 0.14)
+    .fromTo(lastName, { yPercent: 105 }, rise, shotStart[1] + 0.14)
+    .fromTo('.who', { y: 16, autoAlpha: 0 }, enter, shotStart[2] + 0.1)
+    .fromTo('.why', { y: 22, autoAlpha: 0 }, enter, shotStart[3] + 0.1)
+    .addLabel('impact', t)
+    .call(() => {
+      $('.fx').classList.add('is-smash');
+      tag.textContent = 'in';
+    }, null, 'impact')
+    .to('.court', { keyframes: { x: [0, -10, 8, -5, 3, 0], y: [0, 7, -6, 3, -1, 0], easeEach: 'sine.inOut' }, duration: 0.46, ease: 'none' }, 'impact')
+    .fromTo(rings, { scale: 0.15, opacity: 0, svgOrigin: `${landX} ${landY}` }, { opacity: 0.95, duration: 0.01 }, 'impact')
+    .to(rings, { scale: 5.5, opacity: 0, duration: 0.95, ease: 'expo.out', stagger: 0.08 }, 'impact+=0.01')
+    .fromTo(flight, { squash: 1 }, { squash: 0, duration: 0.6, ease: 'elastic.out(1, .4)', onUpdate: draw, immediateRender: false }, 'impact')
+    .to(flight, { keyframes: [{ height: 0.24, duration: 0.14, ease: 'power2.out' }, { height: 0, duration: 0.17, ease: 'power2.in' }, { height: 0.06, duration: 0.08, ease: 'power1.out' }, { height: 0, duration: 0.09, ease: 'power1.in' }] }, 'impact')
+    .fromTo('.rank', { y: 18, autoAlpha: 0 }, { ...enter, immediateRender: false }, 'impact')
+    // A rank is climbed, not counted, so the number falls from the size of the field to 38.
+    .fromTo(count, { n: 9000 }, { n: 38, duration: 1.2, ease: 'expo.out', onUpdate: showCount, immediateRender: false }, 'impact')
+    .fromTo('.cta', { y: 18, autoAlpha: 0 }, { ...enter, immediateRender: false }, 'impact+=0.12')
+    .to([trail, hits], { opacity: 0, duration: 0.8, ease: 'power1.out' }, 'impact+=0.45')
+    .call(setupScroll);
+
+  function resetIntro() {
+    points = [];
+    lastX = null;
+    lastY = null;
+    flight.angle = 0;
+    hits.replaceChildren();
+    trail.setAttribute('points', '');
+    gsap.set([trail, hits], { opacity: 1 });
+    $('.fx').classList.remove('is-smash');
+    tag.textContent = 'shuttle id:38';
+    gsap.set(['.rank', '.cta'], { autoAlpha: 0 });
+    gsap.set(ball, { visibility: 'hidden' });
+    draw();
+  }
+
+  resetIntro();
+  root.classList.remove('js-wait');
+  await PJ.whenVisible();
+  intro.play();
+
+  $('.serve').addEventListener('click', () => {
+    if (intro.isActive() || scrollY > 4) return;
+    intro.pause(0);
+    Object.assign(flight, { u: START[0], v: START[1], height: 0, squash: 0 });
+    resetIntro();
+    intro.restart();
+  });
+
+  // Scrolling during the intro finishes it straight away instead of fighting the visitor.
+  lenis.on('scroll', () => { if (intro.isActive() && scrollY > 2) intro.progress(1); });
+
+  // Scroll tips the camera from overhead down to a broadcast view of the court.
+  let scrollReady = false;
+  function setupScroll() {
+    if (scrollReady) return;
+    scrollReady = true;
+    gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: { trigger: '.runway', start: 'top top', end: 'bottom bottom', scrub: true },
+    // Pivots on the near edge, so the text below the court never grows off the sides of the screen.
+    }).to('.court', { rotationX: portrait ? 54 : 64, scale: portrait ? 0.92 : 0.98, transformOrigin: portrait ? '50% 100%' : '50% 112%' });
+    ScrollTrigger.refresh();
+  }
+})();
+</script>
+</body>
+</html>
