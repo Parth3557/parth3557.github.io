@@ -1,0 +1,29 @@
+---
+import { PRIVATE_PROJECT_LABEL } from '../lib/content-rules';
+import type { projects } from '../lib/content';
+import MultimodalDiagram from './MultimodalDiagram.astro';
+
+interface Props {
+  project: (typeof projects)[number];
+  position: number;
+}
+
+const { project, position } = Astro.props;
+const track = `project id:${String(position).padStart(2, '0')}`;
+---
+
+<li class="card">
+  <figure class="card__shot" data-track={track}>
+    {project.coverImage && <img src={project.coverImage} width="1280" height="800" loading="lazy" decoding="async" alt={project.coverAlt} />}
+    {!project.coverImage && project.coverDiagram === 'multimodal' && <MultimodalDiagram label={project.coverAlt} />}
+    {project.coverCredit && <figcaption class="card__credit">{project.coverCredit}</figcaption>}
+  </figure>
+  <p class="card__badge">{project.badge}</p>
+  <h3>{project.title}</h3>
+  <p class="card__text">{project.summary}</p>
+  <div class="card__foot">
+    {project.isPrivate
+      ? <p class="card__private">{PRIVATE_PROJECT_LABEL}</p>
+      : project.repoUrl && <a class="card__link" href={project.repoUrl} target="_blank" rel="noopener">View code<span class="sr-only"> for {project.title}</span></a>}
+  </div>
+</li>

@@ -1,0 +1,494 @@
+/* The home page: the rally hero, the journey, the projects, and the contact section. */
+:root { --strip: 112px; }
+
+/* Text and links wrap to two rows on these screens, so the court leaves them room. */
+@media (max-width: 1040px), (max-height: 610px) {
+  :root { --strip: 140px; }
+}
+
+.hero { position: relative; padding-top: var(--nav-h); padding-bottom: 24px; }
+.floor {
+  min-height: calc(100svh - var(--nav-h) - 24px);
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  perspective: 1500px;
+  perspective-origin: 50% 25%;
+}
+
+/* The plane everything is painted on. A real court is 13.4 x 6.1 m. */
+.court {
+  --w: min(100vw - 2 * var(--gutter), (100svh - var(--nav-h) - var(--strip) - 24px) * 2.1967);
+  position: relative;
+  width: var(--w);
+  aspect-ratio: 1340 / 610;
+  container-type: inline-size;
+  margin-bottom: var(--strip);
+}
+.plan, .fx { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.fx { z-index: 3; pointer-events: none; }
+#surface { fill: var(--surface); }
+#lines line { stroke: var(--court-line); stroke-width: 3px; vector-effect: non-scaling-stroke; }
+#net { stroke: var(--ink); stroke-width: 2px; vector-effect: non-scaling-stroke; stroke-dasharray: 1 5; stroke-linecap: round; }
+#ground { stroke: var(--ink); stroke-width: 2px; vector-effect: non-scaling-stroke; }
+#pulse { stroke: var(--accent); stroke-width: 4px; vector-effect: non-scaling-stroke; opacity: 0; }
+
+.hook { fill: none; stroke: var(--accent); stroke-linecap: round; }
+.tail { fill: none; stroke: var(--accent); stroke-width: 3px; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+#trail { fill: none; stroke: var(--accent); stroke-width: 1.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+#hits circle { fill: var(--accent); }
+.ring { fill: none; stroke: var(--accent); stroke-width: 2.5px; vector-effect: non-scaling-stroke; opacity: 0; }
+
+.shuttle__skirt { fill: var(--bg); stroke: var(--ink); stroke-width: 1.3; stroke-linejoin: round; }
+.shuttle__rib { fill: none; stroke: var(--ink); stroke-width: .75; opacity: .6; }
+.shuttle__cork { fill: var(--accent); }
+#shade { fill: var(--ink); opacity: .16; }
+#bbox { fill: none; stroke: var(--accent-2); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+#tag { fill: var(--accent-2); font-family: var(--font-mono); font-weight: 500; }
+.is-smash #bbox { stroke: var(--accent); }
+.is-smash #tag { fill: var(--accent-text); }
+
+/* The name stands on the court line. Each line is clipped there, so letters rise out of it. */
+.name {
+  position: absolute;
+  z-index: 2;
+  left: 7.2%;
+  bottom: calc(7.54% + .03em);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .1em;
+  font: 600 15.4cqw/1 var(--font-display);
+  letter-spacing: .008em;
+  font-kerning: none;
+  text-rendering: optimizeSpeed;
+  white-space: nowrap;
+}
+.name__line { display: block; height: .82em; clip-path: inset(-1em -.2em -.03em -.2em); }
+
+.why {
+  position: absolute;
+  z-index: 2;
+  left: 7.2%;
+  width: 52%;
+  top: 10.2%;
+  margin: 0;
+  font: 500 2.2cqw/1.16 var(--font-display);
+  letter-spacing: .005em;
+  text-wrap: balance;
+}
+.rank { position: absolute; z-index: 2; left: 53.4%; width: 21%; top: 34%; margin: 0; }
+.rank__n { display: block; font: 600 6.4cqw/1 var(--font-display); color: var(--accent-text); }
+.rank__of { display: block; margin-top: .4em; font: 500 max(12px, .92cqw)/1.3 var(--font-mono); color: var(--muted-text); }
+
+.serve {
+  position: absolute;
+  z-index: 4;
+  left: 85.8%;
+  top: 83.8%;
+  width: 130px;
+  height: 180px;
+  margin: -90px 0 0 -65px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.serve .fact { right: 70%; bottom: 62%; max-width: 240px; }
+
+/*
+ * The strip under the court. One flex row that wraps, so the role line and the links can never
+ * overlap: when they stop fitting side by side, the links move to their own row.
+ */
+.strip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 16px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+}
+.who { margin: 0; color: var(--muted-text); line-height: 1.35; text-wrap: balance; }
+.who strong { display: block; margin-bottom: .15em; color: var(--ink); font: 600 clamp(1.15rem, 1.75vw, 1.7rem)/1.15 var(--font-display); letter-spacing: .005em; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px clamp(14px, 1.8vw, 26px); }
+.cta { display: flex; gap: 12px; }
+.social { display: flex; gap: clamp(10px, 1.2vw, 18px); }
+.social a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: .3em;
+}
+.social a:hover { color: var(--accent-text); }
+
+@container (max-width: 1060px) { .who__from { display: none; } }
+
+/* Where the shuttle goes next */
+.stops { position: relative; z-index: 5; background: var(--bg); }
+.stops__sticky { position: relative; display: flex; flex-direction: column; gap: 48px; padding: 72px var(--gutter); }
+.stops h2 { margin: 0; font: 600 clamp(2.6rem, 6.4vw, 6rem)/1 var(--font-display); letter-spacing: .005em; }
+.stops__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: clamp(16px, 2.2vw, 32px);
+  border-top: 2px solid var(--ink);
+}
+.stop { position: relative; padding-top: 22px; }
+.stop__dot { position: absolute; left: 0; top: -7px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink); }
+.stop h3 { margin: 0 0 8px; font: 600 clamp(1.2rem, 1.7vw, 1.6rem)/1.12 var(--font-display); }
+.stop p { margin: 0; color: var(--muted-text); }
+.stop-rank { position: relative; margin-top: 10px; }
+.stop-rank__n { display: block; font: 600 clamp(2.4rem, 3.6vw, 3.6rem)/1 var(--font-display); color: var(--accent-text); }
+.stop-rank__of { display: block; margin-top: 6px; max-width: 16ch; font: 500 .85rem/1.25 var(--font-mono); color: var(--muted-text); }
+.stop__q {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: none;
+  color: var(--ink);
+  font: 600 1rem/1 var(--font-display);
+  cursor: pointer;
+}
+.stop__q .fact { right: 0; top: calc(100% + 8px); }
+.stops__flight { display: none; }
+.hop-ghost { fill: none; stroke: var(--line); stroke-width: 2; stroke-dasharray: 2 8; stroke-linecap: round; }
+.hop-live { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+
+/* What have I built? The same cards fill this section and the glimpse panel. */
+.work { position: relative; z-index: 5; background: var(--bg); padding: clamp(56px, 9vh, 110px) var(--gutter) clamp(72px, 10vh, 120px); }
+.work h2 { margin: 0 0 clamp(28px, 4vh, 48px); font: 600 clamp(2.2rem, 6.4vw, 6rem)/1 var(--font-display); letter-spacing: .005em; }
+.cards {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: clamp(28px, 3.4vw, 44px) clamp(16px, 2.2vw, 32px);
+}
+.card { display: flex; flex-direction: column; min-width: 0; }
+.card__shot { position: relative; margin: 0 0 14px; aspect-ratio: 16 / 10; overflow: clip; background: var(--surface); border: 1px solid var(--line); }
+.card__shot img, .card__shot > svg { display: block; width: 100%; height: 100%; object-fit: cover; }
+.card__credit {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 2px 6px;
+  background: var(--bg);
+  color: var(--muted-text);
+  font: 500 .68rem/1.3 var(--font-mono);
+}
+
+/* Hovering a card locks the tracker onto it. */
+.card__shot::before, .card__shot::after {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s, transform .5s var(--ease-out);
+}
+.card__shot::before { content: ""; inset: 8px; border: 2px solid var(--accent-2); transform: scale(1.04); }
+.card__shot::after {
+  content: attr(data-track);
+  left: 8px;
+  top: 8px;
+  padding: 4px 7px;
+  background: var(--accent-2);
+  color: var(--bg);
+  font: 500 .72rem/1 var(--font-mono);
+  transform: translateY(6px);
+}
+.card:hover .card__shot::before, .card:focus-within .card__shot::before,
+.card:hover .card__shot::after, .card:focus-within .card__shot::after,
+.resume__page:hover .card__shot::before, .resume__page:focus-visible .card__shot::before,
+.resume__page:hover .card__shot::after, .resume__page:focus-visible .card__shot::after { opacity: 1; transform: none; }
+
+.card__badge { margin: 0 0 6px; color: var(--accent-2); font: 500 .8rem/1.3 var(--font-mono); }
+.card h3 { margin: 0 0 8px; font: 600 clamp(1.15rem, 1.5vw, 1.4rem)/1.14 var(--font-display); }
+.card__text { margin: 0; color: var(--muted-text); font-size: .98rem; line-height: 1.42; }
+.card__foot { margin-top: auto; padding-top: 10px; }
+.card__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: .3em;
+}
+.card__link:hover { color: var(--accent-text); }
+.card__private { margin: 0; padding: 12px 0; color: var(--muted-text); font: 500 .8rem/1.35 var(--font-mono); }
+
+.diagram__bg { fill: var(--surface); }
+.diagram__box { fill: var(--bg); stroke: var(--ink); stroke-width: 1.5; }
+.diagram__out { fill: var(--accent); }
+.diagram__line { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+.diagram__label { fill: var(--ink); font: 600 17px var(--font-display); text-anchor: middle; dominant-baseline: central; }
+.diagram__on-accent { fill: var(--on-accent); }
+.diagram__note { fill: var(--muted-text); font: 500 13px var(--font-mono); text-anchor: middle; }
+
+/* Resume: the page itself, laid on the court. It straightens up when someone reaches for it. */
+.resume {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, min(44vw, 540px));
+  align-items: center;
+  gap: clamp(28px, 5vw, 80px);
+  padding: clamp(56px, 9vh, 110px) var(--gutter);
+  overflow: clip;
+  background: var(--surface);
+}
+.resume h2 { margin: 0; font: 600 clamp(2.2rem, 6.4vw, 6rem)/1 var(--font-display); letter-spacing: .005em; }
+.resume__note { margin: .5em 0 0; color: var(--muted-text); font-size: clamp(1.05rem, 1.6vw, 1.35rem); line-height: 1.3; }
+.resume__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: clamp(18px, 3vh, 28px); }
+.resume__page { display: block; color: inherit; }
+.resume__sheet {
+  display: block;
+  margin: 0;
+  aspect-ratio: 612 / 660;
+  background: #fff;
+  transform: rotate(1.6deg);
+  transition: transform .6s var(--ease-out);
+}
+.resume__sheet img { object-position: top; }
+.resume__page:hover .resume__sheet, .resume__page:focus-visible .resume__sheet { transform: none; }
+
+/* What's next? The page inverts here, so the rally ends on a clear last shot. */
+.contact {
+  position: relative;
+  z-index: 5;
+  overflow: clip;
+  background: var(--ink);
+  color: var(--bg);
+}
+.contact :focus-visible { outline-color: var(--accent-on-ink); }
+.contact__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(20px, 3.4vh, 36px);
+  min-height: calc(100svh - 72px);
+  padding: clamp(72px, 12vh, 140px) var(--gutter) clamp(48px, 7vh, 80px);
+}
+/* In the page's flow, beside the links and under the email, so it can't run behind any text. */
+.contact__end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px clamp(24px, 4vw, 64px);
+}
+.contact__court {
+  flex: 0 1 min(44vw, 560px);
+  min-width: 240px;
+  height: auto;
+  margin-right: calc(var(--gutter) * -1);
+  margin-bottom: calc(clamp(48px, 7vh, 80px) * -1);
+  color: var(--muted-on-ink);
+  opacity: .35;
+  pointer-events: none;
+}
+.contact__court line, .contact__court rect { fill: none; stroke: currentColor; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.contact__title {
+  position: relative;
+  margin: 0;
+  font: 600 clamp(3.2rem, 13.4vw, 13rem)/.98 var(--font-display);
+  letter-spacing: .005em;
+}
+.contact__title .q { color: var(--accent-on-ink); }
+.contact__lead { position: relative; margin: 0; font-size: clamp(1.1rem, 1.8vw, 1.5rem); line-height: 1.3; }
+.contact__email {
+  position: relative;
+  align-self: flex-start;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: inherit;
+  font: 500 clamp(1.25rem, 5.2vw, 4.4rem)/1.1 var(--font-display);
+  text-decoration: none;
+}
+.contact__email::after {
+  content: "";
+  display: block;
+  height: .06em;
+  min-height: 2px;
+  margin-top: .12em;
+  background: var(--accent-on-ink);
+  transform-origin: left;
+  transition: transform .6s var(--ease-out);
+}
+.contact__email:hover::after { transform: scaleX(.6); }
+.contact__links {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px clamp(20px, 3vw, 44px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.contact__links a {
+  display: inline-flex;
+  align-items: center;
+  gap: .6em;
+  min-height: 44px;
+  color: inherit;
+  font-weight: 500;
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  text-decoration: none;
+}
+.contact__label {
+  text-decoration: underline;
+  text-decoration-color: var(--accent-on-ink);
+  text-decoration-thickness: 2px;
+  text-underline-offset: .3em;
+}
+.contact__handle { color: var(--muted-on-ink); font: 500 .85rem/1 var(--font-mono); }
+.foot {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  min-height: 72px;
+  padding: 16px var(--gutter);
+  background: var(--ink);
+  color: var(--muted-on-ink);
+  border-top: 1px solid var(--muted-on-ink);
+  font: 500 .85rem/1.3 var(--font-mono);
+}
+
+/* The glimpse panel. Without JavaScript the same links jump to the section above. */
+.glimpse {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: transparent;
+  color: var(--ink);
+}
+.glimpse::backdrop { background: transparent; }
+.glimpse__shade { position: absolute; inset: 0; background: #000; opacity: .55; }
+.glimpse__sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: calc(100svh - 48px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border-top: 2px solid var(--ink);
+}
+.glimpse__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: clamp(14px, 2.4vh, 26px) var(--gutter) clamp(10px, 1.6vh, 18px); }
+.glimpse__head h2 { margin: 0; font: 600 clamp(1.6rem, 3.4vw, 3rem)/1 var(--font-display); letter-spacing: .005em; }
+.glimpse .cards {
+  display: flex;
+  gap: clamp(14px, 1.8vw, 26px);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  padding: 4px var(--gutter) 16px;
+  scrollbar-color: var(--line) transparent;
+  scrollbar-width: thin;
+}
+.glimpse .card { flex: 0 0 clamp(252px, 22.6vw, 350px); scroll-snap-align: start; scroll-margin-left: var(--gutter); }
+.glimpse .card__text { font-size: .94rem; }
+.glimpse__foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 var(--gutter) clamp(6px, 1.2vh, 14px); color: var(--muted-text); font-size: .95rem; }
+.glimpse__flight { position: absolute; inset: 0; z-index: 5; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+#shuttle3 { visibility: hidden; }
+
+/* Scroll choreography only runs when motion is on. Everything is readable without it. */
+.motion .runway { height: 190vh; }
+.motion .hero { position: sticky; top: 0; height: 100svh; overflow: clip; }
+.motion .stops { height: 360vh; }
+.motion .stops__sticky { position: sticky; top: 0; height: 100svh; overflow: clip; justify-content: center; }
+.motion .stops__list { margin-top: 90px; }
+.motion .stops__flight { display: block; position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+
+html:not(.js) .plan { display: none; }
+html:not(.js) .court { background: var(--surface); }
+
+/* The statement stays visible from the first paint: the "why?" comes first, then the rally. */
+.js-wait .name__line, .js-wait .plan, .js-wait .who, .js-wait .rank, .js-wait .cta, .js-wait .social { visibility: hidden; }
+
+@media (max-width: 1000px) {
+  .stops h2 { font-size: clamp(2.2rem, 8.6vw, 4rem); }
+  .stops__list { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: minmax(0, 1fr); border-top: 0; border-left: 2px solid var(--ink); gap: clamp(12px, 1.8vh, 30px); }
+  .motion .stops__list { margin-top: 0; }
+  .stop { padding: 0 0 0 46px; }
+  .stop__dot { left: -7px; top: 6px; }
+  .stop h3 { margin-bottom: 4px; font-size: 1.15rem; }
+  .stop p { font-size: .95rem; line-height: 1.3; }
+  .stop-rank { position: static; display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .stop-rank__n { min-width: 3.6em; font-size: 2.2rem; }
+  .stop-rank__of { margin: 0; max-width: none; font-size: .78rem; }
+  .stop__q { top: -3px; bottom: auto; } /* beside the heading, clear of the rank row */
+  .stop__q .fact { top: auto; bottom: calc(100% + 8px); }
+  .stops__sticky { gap: 18px; padding-top: 18px; padding-bottom: 18px; }
+}
+
+/* On a phone the next card peeking in already says "swipe". */
+@media (max-width: 620px) { .glimpse__hint { display: none; } }
+
+/* Portrait: the court turns 90 degrees and the name stands on a short service line. */
+@media (max-aspect-ratio: 1/1), (max-width: 760px) {
+  :root { --strip: 0px; }
+  .hero { padding-bottom: 10px; }
+  .court {
+    --w: min(100vw - 2 * var(--gutter), (100svh - var(--nav-h) - 14px) / 2.1967);
+    aspect-ratio: 610 / 1340;
+    margin-bottom: 0;
+  }
+  .name { left: 8%; bottom: calc(35.2% + .03em); font-size: 16.4cqw; }
+  .rank { left: 8%; right: auto; width: auto; max-width: 58%; top: 8.4%; }
+  .rank__n { font-size: 15cqw; }
+  .rank__of { margin-top: .25em; font-size: max(12px, 3.4cqw); }
+  .strip { display: contents; }
+  .who { position: absolute; z-index: 2; left: 8%; right: 8%; top: 66.8%; font-size: max(13px, 4.1cqw); }
+  .why { left: 8%; width: 84%; top: 73.8%; font-size: 5.9cqw; }
+  .actions { display: contents; }
+  .social { position: absolute; z-index: 2; right: 8%; top: 7.4%; flex-direction: column; align-items: flex-end; gap: 0; }
+  .cta { position: absolute; z-index: 2; left: 8%; right: 8%; bottom: 1.5%; flex-direction: column; gap: 8px; }
+  .cta .btn { min-height: 44px; }
+  .serve { left: 78%; top: 60.5%; width: 90px; height: 120px; margin: -60px 0 0 -45px; }
+  .serve .fact { right: 20%; bottom: 100%; }
+  .resume { grid-template-columns: minmax(0, 1fr); }
+  .resume__sheet { aspect-ratio: 4 / 3; transform: rotate(.8deg); }
+  .contact__court { flex-basis: 100%; }
+}
+
+/* A short screen can't hold the whole court at once, so the hero simply scrolls. */
+@media ((max-aspect-ratio: 1/1) or (max-width: 760px)) and (max-height: 700px), (min-aspect-ratio: 1/1) and (min-width: 761px) and (max-height: 500px) {
+  .court { --w: calc(100vw - 2 * var(--gutter)); }
+  .motion .runway, .motion .stops { height: auto; }
+  .motion .hero { position: relative; height: auto; overflow: visible; }
+  .motion .stops__sticky { position: relative; height: auto; overflow: visible; }
+  .motion .stops__flight { display: none; }
+}

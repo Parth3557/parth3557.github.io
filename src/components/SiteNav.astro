@@ -1,0 +1,28 @@
+---
+import { home, profile } from '../lib/content';
+
+interface Props {
+  /** The 404 page links back to sections of the home page. */
+  from?: string;
+}
+
+const { from = '' } = Astro.props;
+const onHome = from === '';
+---
+
+<header class="nav">
+  <a class="nav__logo" href="/" aria-label="Parth Jadhav, home">PJ</a>
+  <div class="nav__right">
+    <nav aria-label="Main">
+      <ul class="nav__links">
+        <li><a href={`${from}#journey`}>Journey</a></li>
+        <li><a href={`${from}#projects`} data-glimpse={onHome ? '' : undefined}>Projects</a></li>
+        {profile.resume && <li><a href={`${from}#resume`}>{home.resumeHeading}</a></li>}
+        <li><a href={`${from}#contact`}>Contact</a></li>
+      </ul>
+    </nav>
+    <button class="toggle" type="button" data-theme-toggle aria-label="Switch colour theme">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"></path></svg>
+    </button>
+  </div>
+</header>

@@ -1,0 +1,20 @@
+---
+import SiteNav from '../components/SiteNav.astro';
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Out! Page not found" description="The shuttle landed outside the court.">
+  <SiteNav from="/" />
+  <main id="main" tabindex="-1" class="grid min-h-svh content-center gap-6 px-[var(--gutter)] pt-[var(--nav-h)]">
+    <p class="m-0 font-mono text-sm text-muted">404</p>
+    <h1 class="m-0 font-display text-[clamp(2.6rem,9vw,7rem)] leading-none font-semibold">Out!</h1>
+    <p class="m-0 max-w-[32ch] text-[clamp(1.1rem,2vw,1.5rem)]">The shuttle landed outside the court.</p>
+    <p class="m-0"><a class="btn btn--primary" href="/">Back on court</a></p>
+  </main>
+</Base>
+
+<script>
+  import { themeToggle } from '../scripts/theme-toggle';
+
+  themeToggle(new AbortController().signal);
+</script>

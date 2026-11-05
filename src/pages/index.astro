@@ -1,0 +1,199 @@
+---
+import '../styles/home.css';
+import ProjectCard from '../components/ProjectCard.astro';
+import SiteNav from '../components/SiteNav.astro';
+import Base from '../layouts/Base.astro';
+import { heroAchievement, home, journeyOnHome, profile, projects } from '../lib/content';
+
+const [firstName, ...others] = profile.name.split(' ');
+const lastName = others.join(' ');
+const handleOf = (url: string) => new URL(url).pathname.replace(/^\/(in\/)?/, '').replace(/\/$/, '');
+const heading = home.contactHeading.replace(/\?$/, '');
+const resumeFileName = `${profile.name.replace(/\s+/g, '_')}_Resume.pdf`;
+---
+
+<Base title={`${profile.name}, ${profile.title}`} description={profile.bio}>
+  <SiteNav />
+
+  <main id="main" tabindex="-1">
+    <div class="runway">
+      <section class="hero" aria-label="Introduction">
+        <div class="floor">
+          <div class="court">
+            <!-- Drawn in metres x 100, so one unit is a real centimetre. -->
+            <svg class="plan" viewBox="0 0 1340 610" aria-hidden="true" focusable="false">
+              <g id="lines">
+                <rect id="surface" width="1340" height="610"></rect>
+                <line x1="0" y1="0" x2="1340" y2="0"></line>
+                <line x1="0" y1="610" x2="1340" y2="610"></line>
+                <line x1="0" y1="0" x2="0" y2="610"></line>
+                <line x1="1340" y1="0" x2="1340" y2="610"></line>
+                <line x1="0" y1="46" x2="1340" y2="46"></line>
+                <line x1="0" y1="564" x2="1340" y2="564"></line>
+                <line x1="76" y1="0" x2="76" y2="610"></line>
+                <line x1="1264" y1="0" x2="1264" y2="610"></line>
+                <line x1="472" y1="0" x2="472" y2="610"></line>
+                <line x1="868" y1="0" x2="868" y2="610"></line>
+                <line x1="0" y1="305" x2="472" y2="305"></line>
+                <line x1="868" y1="305" x2="1340" y2="305"></line>
+                <line id="net" x1="670" y1="-16" x2="670" y2="626"></line>
+              </g>
+              <polyline id="trail"></polyline>
+              <g id="hits"></g>
+              <path id="flight" fill="none" stroke="none"></path>
+              <path id="tail" class="tail" pathLength="1"></path>
+              <path id="hook" class="hook" pathLength="1" stroke-width="28.1" d="M1053.06 201.5C1053.06 132.75 1098.38 89 1154.63 89 1212.44 89 1249.94 131.19 1249.94 182.75 1249.94 231.19 1218.69 257.75 1187.44 284.31 1162.44 306.19 1149.94 329.63 1149.94 370.25L1149.94 417.13"></path>
+              <line id="ground" x1="0" y1="564" x2="1340" y2="564"></line>
+            </svg>
+
+            <h1 class="name" aria-label={profile.name}><span class="name__line">{firstName}</span> <span class="name__line">{lastName}</span></h1>
+            <p class="why">{home.statement}</p>
+            <p class="rank">
+              <span class="rank__n" data-from={heroAchievement.metricFrom} data-to={heroAchievement.metric}>{heroAchievement.metric}</span>
+              <span class="rank__of">{heroAchievement.metricLabel}, {heroAchievement.title}</span>
+            </p>
+
+            <div class="strip">
+              <p class="who"><strong>{profile.title}</strong>{profile.studies}{profile.hometown && <span class="who__from">, from {profile.hometown}</span>}</p>
+              <div class="actions">
+                <nav class="social" aria-label="Profiles">
+                  <a href={profile.githubUrl} target="_blank" rel="me noopener">GitHub</a>
+                  <a href={profile.linkedinUrl} target="_blank" rel="me noopener">LinkedIn</a>
+                </nav>
+                <div class="cta">
+                  <a class="btn btn--primary" href="#projects" data-glimpse data-magnetic>See what I've built</a>
+                  <a class="btn" href="#journey" data-magnetic>Follow the journey</a>
+                </div>
+              </div>
+            </div>
+
+            <svg class="fx" viewBox="0 0 1340 610" aria-hidden="true" focusable="false">
+              <defs>
+                <!-- Drawn pointing along +x, cork first, centred on 0,0. -->
+                <g id="shuttle-shape">
+                  <path class="shuttle__skirt" d="M12-7.4-26-17.5C-28-14-27-12-29-9.2-30.6-6.6-29-4.6-30-2.2-30.6 0-30.6 0-30 2.2-29 4.6-30.6 6.6-29 9.2-27 12-28 14-26 17.5L12 7.4Z"></path>
+                  <path class="shuttle__rib" d="M12-4.4-29-9.2M12-1.5-30-2.2M12 1.5-30 2.2M12 4.4-29 9.2"></path>
+                  <path class="shuttle__rib" d="M-3-12.2Q-.4 0-3 12.2M-8.5-13.7Q-5.4 0-8.5 13.7"></path>
+                  <path class="shuttle__cork" d="M11-8C23-8 30-4.6 30 0 30 4.6 23 8 11 8 9.4 8 9.4-8 11-8Z"></path>
+                </g>
+              </defs>
+              <line id="pulse"></line>
+              <ellipse class="ring" rx="34" ry="34"></ellipse>
+              <ellipse class="ring" rx="34" ry="34"></ellipse>
+              <g id="ball" transform="translate(1149.94 511.27)">
+                <ellipse id="shade" rx="26" ry="9" visibility="hidden"></ellipse>
+                <g id="bird" transform="rotate(90) scale(1.758)"><use href="#shuttle-shape"></use></g>
+                <rect id="bbox" rx="2" opacity="0"></rect>
+                <text id="tag" opacity="0" data-label={`shuttle id:${heroAchievement.metric}`}></text>
+              </g>
+            </svg>
+
+            <button class="serve" type="button" data-curious aria-label={`Play the rally again. Hidden fact: ${home.serveFact}`}>
+              <span class="fact" aria-hidden="true">{home.serveFact} Click to play the rally again.</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="stops" id="journey" tabindex="-1" aria-labelledby="journey-title">
+      <div class="stops__sticky">
+        <h2 id="journey-title">{home.journeyHeading}</h2>
+        <ol class="stops__list">
+          {journeyOnHome.map((stop) => (
+            <li class="stop" data-smash={stop.smash ? '' : undefined}>
+              <span class="stop__dot"></span>
+              <h3>{stop.title}</h3>
+              <p>{stop.description}</p>
+              {stop.metric && (
+                <div class="stop-rank">
+                  <span class="stop-rank__n" data-from={stop.metricFrom} data-to={stop.metric}>{stop.metric}</span>
+                  <span class="stop-rank__of">{stop.metricLabel}</span>
+                  {stop.fact && (
+                    <button class="stop__q" type="button" data-curious aria-label={`Hidden fact: ${stop.fact}`}>?<span class="fact" aria-hidden="true">{stop.fact}</span></button>
+                  )}
+                </div>
+              )}
+            </li>
+          ))}
+        </ol>
+        <svg class="stops__flight" aria-hidden="true" focusable="false">
+          <ellipse class="ring" id="smash-ring" rx="30" ry="9"></ellipse>
+          <use id="shuttle2" href="#shuttle-shape" visibility="hidden"></use>
+        </svg>
+      </div>
+    </section>
+
+    <section class="work" id="projects" tabindex="-1" aria-labelledby="projects-title">
+      <h2 id="projects-title">{home.projectsHeading}</h2>
+      <ul class="cards">
+        {projects.map((project, i) => <ProjectCard project={project} position={i + 1} />)}
+      </ul>
+    </section>
+
+    {profile.resume && (
+      <section class="resume" id="resume" tabindex="-1" aria-labelledby="resume-title">
+        <div class="resume__text">
+          <h2 id="resume-title">{home.resumeHeading}</h2>
+          {home.resumeNote && <p class="resume__note">{home.resumeNote}</p>}
+          <div class="resume__actions">
+            <a class="btn btn--primary" href={profile.resume} download={resumeFileName} data-magnetic>Download PDF</a>
+            <a class="btn" href={profile.resume} target="_blank" rel="noopener" data-magnetic>Open in a new tab</a>
+          </div>
+        </div>
+        {profile.resumePreview && (
+          <a class="resume__page" href={profile.resume} target="_blank" rel="noopener">
+            <span class="resume__sheet card__shot" data-track="resume id:01">
+              <img src={profile.resumePreview} width="960" height="1242" loading="lazy" decoding="async" alt={`First page of ${profile.name}'s resume. Opens the full PDF.`} />
+            </span>
+          </a>
+        )}
+      </section>
+    )}
+
+    <section class="contact" id="contact" tabindex="-1" aria-labelledby="contact-title">
+      <div class="contact__inner">
+        <h2 class="contact__title" id="contact-title">{heading}{home.contactHeading.endsWith('?') && <span class="q">?</span>}</h2>
+        <p class="contact__lead" data-reveal>{profile.availability}</p>
+        <a class="contact__email" href={`mailto:${profile.email}`} data-reveal>{profile.email}</a>
+        <div class="contact__end">
+          <ul class="contact__links" data-reveal>
+            <li><a href={profile.githubUrl} target="_blank" rel="me noopener"><span class="contact__label">GitHub</span> <span class="contact__handle">{handleOf(profile.githubUrl)}</span></a></li>
+            <li><a href={profile.linkedinUrl} target="_blank" rel="me noopener"><span class="contact__label">LinkedIn</span> <span class="contact__handle">{handleOf(profile.linkedinUrl)}</span></a></li>
+          </ul>
+          <svg class="contact__court" viewBox="0 0 670 305" aria-hidden="true" focusable="false">
+            <rect x="1" y="1" width="668" height="303"></rect>
+            <line x1="1" y1="24" x2="669" y2="24"></line>
+            <line x1="1" y1="281" x2="669" y2="281"></line>
+            <line x1="39" y1="1" x2="39" y2="304"></line>
+            <line x1="236" y1="1" x2="236" y2="304"></line>
+            <line x1="39" y1="152" x2="236" y2="152"></line>
+          </svg>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">{home.footerNote}</footer>
+
+  <dialog class="glimpse" id="glimpse" aria-labelledby="glimpse-title" data-lenis-prevent>
+    <div class="glimpse__shade"></div>
+    <div class="glimpse__sheet">
+      <div class="glimpse__head">
+        <h2 id="glimpse-title">{home.projectsHeading}</h2>
+        <button class="btn" type="button" data-glimpse-close autofocus>Close</button>
+      </div>
+      <div data-glimpse-cards></div>
+      <div class="glimpse__foot">
+        <span class="glimpse__hint">Scroll sideways for all {projects.length} projects</span>
+        <a class="card__link" href="#projects" data-glimpse-all>See them all on the page</a>
+      </div>
+    </div>
+    <svg class="glimpse__flight" aria-hidden="true" focusable="false"><use id="shuttle3" href="#shuttle-shape"></use></svg>
+  </dialog>
+</Base>
+
+<script>
+  import '../scripts/home';
+  import '../scripts/track';
+</script>

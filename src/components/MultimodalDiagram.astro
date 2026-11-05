@@ -1,0 +1,18 @@
+---
+interface Props {
+  label: string;
+}
+---
+
+<svg viewBox="0 0 640 400" role="img" aria-label={Astro.props.label}>
+  <rect class="diagram__bg" width="640" height="400"></rect>
+  <path class="diagram__line" d="M160 118H194M160 262H194M304 118H336V190H356M304 262H336V210H356M486 200H512"></path>
+  <path class="diagram__line" d="M188 112l7 6-7 6M188 256l7 6-7 6M350 184l7 6-7 6M350 204l7 6-7 6M506 194l7 6-7 6"></path>
+  <rect class="diagram__box" x="24" y="88" width="136" height="60"></rect><text class="diagram__label" x="92" y="118">Product text</text>
+  <rect class="diagram__box" x="24" y="232" width="136" height="60"></rect><text class="diagram__label" x="92" y="262">Product image</text>
+  <rect class="diagram__box" x="196" y="88" width="108" height="60"></rect><text class="diagram__label" x="250" y="118">BERT</text>
+  <rect class="diagram__box" x="196" y="232" width="108" height="60"></rect><text class="diagram__label" x="250" y="262">ViT</text>
+  <rect class="diagram__box" x="358" y="170" width="128" height="60"></rect><text class="diagram__label" x="422" y="200">Fusion head</text>
+  <rect class="diagram__out" x="514" y="170" width="102" height="60"></rect><text class="diagram__label diagram__on-accent" x="565" y="200">Price</text>
+  <text class="diagram__note" x="320" y="352">SMAPE loss, AdamW + cosine LR</text>
+</svg>
