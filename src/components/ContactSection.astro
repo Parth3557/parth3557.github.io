@@ -1,0 +1,34 @@
+---
+import { home, profile } from '../lib/content';
+
+interface Props {
+  /** The contact page uses this section as its main heading. */
+  as?: 'h1' | 'h2';
+}
+
+const { as: Heading = 'h2' } = Astro.props;
+const question = home.contactHeading.replace(/\?$/, '');
+const handleOf = (url: string) => new URL(url).pathname.replace(/^\/(in\/)?/, '').replace(/\/$/, '');
+---
+
+<section class="contact" id="contact" tabindex="-1" aria-labelledby="contact-title">
+  <div class="contact__inner">
+    <Heading class="contact__title" id="contact-title">{question}{home.contactHeading.endsWith('?') && <span class="q">?</span>}</Heading>
+    <p class="contact__lead" data-reveal-contact>{profile.availability}</p>
+    <a class="contact__email" href={`mailto:${profile.email}`} data-reveal-contact>{profile.email}</a>
+    <div class="contact__end">
+      <ul class="contact__links" data-reveal-contact>
+        <li><a href={profile.githubUrl} target="_blank" rel="me noopener"><span class="contact__label">GitHub</span> <span class="contact__handle">{handleOf(profile.githubUrl)}</span></a></li>
+        <li><a href={profile.linkedinUrl} target="_blank" rel="me noopener"><span class="contact__label">LinkedIn</span> <span class="contact__handle">{handleOf(profile.linkedinUrl)}</span></a></li>
+      </ul>
+      <svg class="contact__court" viewBox="0 0 670 305" aria-hidden="true" focusable="false">
+        <rect x="1" y="1" width="668" height="303"></rect>
+        <line x1="1" y1="24" x2="669" y2="24"></line>
+        <line x1="1" y1="281" x2="669" y2="281"></line>
+        <line x1="39" y1="1" x2="39" y2="304"></line>
+        <line x1="236" y1="1" x2="236" y2="304"></line>
+        <line x1="39" y1="152" x2="236" y2="152"></line>
+      </svg>
+    </div>
+  </div>
+</section>

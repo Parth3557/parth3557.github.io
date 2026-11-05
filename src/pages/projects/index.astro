@@ -1,0 +1,33 @@
+---
+import PageHead from '../../components/PageHead.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import Page from '../../layouts/Page.astro';
+import { home, profile, projects } from '../../lib/content';
+import { categoriesWithCounts } from '../../lib/content-rules';
+
+const categories = categoriesWithCounts(projects);
+---
+
+<Page title={`Projects, ${profile.name}`} description={`${projects.length} projects by ${profile.name}, from multimodal deep learning and RAG to computer vision, research and Android.`}>
+  <PageHead title={home.projectsHeading} />
+  <section class="work work--page" aria-labelledby="page-title">
+    <div class="filter" role="group" aria-label="Filter projects by category">
+      <button class="filter__option" type="button" data-filter="all" aria-pressed="true">All <span>{projects.length}</span></button>
+      {categories.map((category) => (
+        <button class="filter__option" type="button" data-filter={category.value} aria-pressed="false">{category.label} <span>{category.count}</span></button>
+      ))}
+    </div>
+    <p class="sr-only" role="status" data-filter-status></p>
+    <ul class="cards" data-cards>
+      {projects.map((project, i) => <ProjectCard project={project} position={i + 1} heading="h2" />)}
+    </ul>
+  </section>
+</Page>
+
+<script>
+  import { startPage } from '../../scripts/page';
+  import { setupFilter } from '../../scripts/project-filter';
+
+  setupFilter();
+  startPage();
+</script>

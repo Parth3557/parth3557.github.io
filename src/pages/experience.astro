@@ -1,0 +1,73 @@
+---
+import PageHead from '../components/PageHead.astro';
+import ResumeSection from '../components/ResumeSection.astro';
+import Page from '../layouts/Page.astro';
+import { achievements, experience, pages, profile, skills } from '../lib/content';
+---
+
+<Page title={`Experience, ${profile.name}`} description={`${profile.name}'s work experience, achievements and skills, with a resume to download.`}>
+  <PageHead title={pages.experienceHeading} />
+  <div class="page-body">
+    <section class="sec" data-reveal aria-labelledby="work-title">
+      <h2 id="work-title">{pages.workHeading}</h2>
+      <ul class="ledger">
+        {experience.map((job) => (
+          <li>
+            <div>
+              <h3>{job.title}</h3>
+              <p>{job.company}{job.place && `, ${job.place}`}</p>
+              {job.points.length > 0 && (
+                <ul class="ledger__points">
+                  {job.points.map((point) => <li>{point}</li>)}
+                </ul>
+              )}
+            </div>
+            <p class="ledger__meta">{job.dates}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="sec" data-reveal aria-labelledby="achievements-title">
+      <h2 id="achievements-title">{pages.achievementsHeading}</h2>
+      <ul class="feats">
+        {achievements.map((item) => (
+          <li class="feat">
+            {item.metric && <p class="feat__metric" data-count-from={item.metricFrom} data-count-to={item.metric}>{item.metric}</p>}
+            <div class="feat__body">
+              <h3>{item.title}</h3>
+              <p class="feat__label">{item.metricLabel}</p>
+              {item.details.length > 0 && (
+                <ul class="ledger__points">
+                  {item.details.map((detail) => <li>{detail}</li>)}
+                </ul>
+              )}
+              {item.sourceUrl && <a class="card__link" href={item.sourceUrl} target="_blank" rel="noopener">Read the post</a>}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="sec" data-reveal aria-labelledby="skills-title">
+      <h2 id="skills-title">{pages.skillsHeading}</h2>
+      <div class="matrix">
+        {skills.map((group) => (
+          <div>
+            <h3>{group.title}</h3>
+            <ul class="chips">
+              {group.items.map((skill) => <li class="chip">{skill}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  </div>
+  <ResumeSection />
+</Page>
+
+<script>
+  import { startPage } from '../scripts/page';
+
+  startPage();
+</script>

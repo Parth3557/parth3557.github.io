@@ -1,0 +1,17 @@
+---
+import ContactSection from '../components/ContactSection.astro';
+import Page from '../layouts/Page.astro';
+import { profile } from '../lib/content';
+---
+
+<Page title={`Contact, ${profile.name}`} description={`${profile.availability} Reach ${profile.name} by email, GitHub or LinkedIn.`}>
+  <div class="contact-page">
+    <ContactSection as="h1" />
+  </div>
+</Page>
+
+<script>
+  import { startPage } from '../scripts/page';
+
+  startPage();
+</script>

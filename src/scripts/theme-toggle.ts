@@ -18,11 +18,18 @@ export function themeToggle(signal: AbortSignal): void {
     const x = clientX || innerWidth - 40;
     const y = clientY || 36;
     const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-    document.startViewTransition(apply).ready.then(() => {
+    // The class swaps the page-change animation for this wipe.
+    root.classList.add('theme-wipe');
+    const transition = document.startViewTransition(apply);
+    const wipe = () => {
       root.animate(
         { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
         { duration: 620, easing: 'cubic-bezier(.16, 1, .3, 1)', pseudoElement: '::view-transition-new(root)' },
       );
-    });
+    };
+    const done = () => root.classList.remove('theme-wipe');
+    // A browser can abort a transition at any point. The theme has still changed by then.
+    transition.ready.then(wipe, () => {});
+    transition.finished.then(done, done);
   }, { signal });
 }

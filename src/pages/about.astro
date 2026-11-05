@@ -1,0 +1,73 @@
+---
+import PageHead from '../components/PageHead.astro';
+import Page from '../layouts/Page.astro';
+import { about, certifications, education, pages, profile } from '../lib/content';
+import { published } from '../lib/content-rules';
+
+const story = published(about.story) || profile.bio;
+const badminton = published(about.badminton);
+---
+
+<Page title={`About, ${profile.name}`} description={profile.curiosity}>
+  <PageHead title={pages.aboutHeading} />
+  <div class="page-body">
+    <section class="statement" aria-labelledby="page-title">
+      <p class="statement__big">{profile.curiosity}</p>
+      <div class="statement__story">
+        {profile.photo && <img class="statement__photo" src={profile.photo} width="800" height="800" loading="lazy" decoding="async" alt={`Portrait of ${profile.name}`} />}
+        <p class="sec__text">{story}</p>
+      </div>
+    </section>
+
+    {about.values.length > 0 && (
+      <section class="sec" data-reveal aria-labelledby="values-title">
+        <h2 id="values-title">{pages.valuesHeading}</h2>
+        <ul class="results">
+          {about.values.map((value) => <li>{value}</li>)}
+        </ul>
+      </section>
+    )}
+
+    {badminton && (
+      <section class="sec" data-reveal aria-labelledby="court-title">
+        <h2 id="court-title">{pages.courtHeading}</h2>
+        <p class="sec__text">{badminton}</p>
+      </section>
+    )}
+
+    <section class="sec" data-reveal aria-labelledby="education-title">
+      <h2 id="education-title">{pages.educationHeading}</h2>
+      <ul class="ledger">
+        {education.map((item) => (
+          <li>
+            <div>
+              <h3>{item.title}</h3>
+              <p>{item.institution}</p>
+            </div>
+            <p class="ledger__meta">{item.dates}{item.cgpa && <br />}{item.cgpa && `CGPA ${item.cgpa}`}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="sec" data-reveal aria-labelledby="certifications-title">
+      <h2 id="certifications-title">{pages.certificationsHeading}</h2>
+      <ul class="ledger">
+        {certifications.map((item) => (
+          <li>
+            <div>
+              <h3>{item.title}</h3>
+              <p>{item.issuer}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</Page>
+
+<script>
+  import { startPage } from '../scripts/page';
+
+  startPage();
+</script>

@@ -75,9 +75,7 @@ body {
   transform-origin: right;
   transition: transform .4s var(--ease-out);
 }
-.nav__links a:hover::after, .nav__links a:focus-visible::after { transform: scaleX(1); transform-origin: left; }
-/* Four links don't fit beside the logo on the narrowest phones. The hero's own button goes to the journey. */
-@media (max-width: 379px) { .nav__links li:first-child { display: none; } }
+.nav__links a:hover::after, .nav__links a:focus-visible::after, .nav__links a[aria-current]::after { transform: scaleX(1); transform-origin: left; }
 
 .toggle {
   width: 44px;
@@ -169,8 +167,8 @@ html:not(.js) .toggle { display: none; }
 }
 
 /* Theme flip: a circular wipe from the toggle (see scripts/theme-toggle.ts). */
-::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
-::view-transition-new(root) { z-index: 2; }
+.theme-wipe::view-transition-old(root), .theme-wipe::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+.theme-wipe::view-transition-new(root) { z-index: 2; }
 
 @media (max-width: 760px) {
   :root { --nav-h: 60px; }

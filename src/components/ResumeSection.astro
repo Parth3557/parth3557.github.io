@@ -1,0 +1,25 @@
+---
+import { home, profile } from '../lib/content';
+
+const fileName = `${profile.name.replace(/\s+/g, '_')}_Resume.pdf`;
+---
+
+{profile.resume && (
+  <section class="resume" id="resume" tabindex="-1" aria-labelledby="resume-title">
+    <div class="resume__text">
+      <h2 id="resume-title">{home.resumeHeading}</h2>
+      {home.resumeNote && <p class="resume__note">{home.resumeNote}</p>}
+      <div class="resume__actions">
+        <a class="btn btn--primary" href={profile.resume} download={fileName} data-magnetic>Download PDF</a>
+        <a class="btn" href={profile.resume} target="_blank" rel="noopener" data-magnetic>Open in a new tab</a>
+      </div>
+    </div>
+    {profile.resumePreview && (
+      <a class="resume__page" href={profile.resume} target="_blank" rel="noopener">
+        <span class="resume__sheet card__shot" data-track="resume id:01">
+          <img src={profile.resumePreview} width="960" height="1242" loading="lazy" decoding="async" alt={`First page of ${profile.name}'s resume. Opens the full PDF.`} />
+        </span>
+      </a>
+    )}
+  </section>
+)}

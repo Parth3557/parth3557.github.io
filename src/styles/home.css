@@ -1,4 +1,4 @@
-/* The home page: the rally hero, the journey, the projects, and the contact section. */
+/* The home page: the rally hero, the journey highlights and the glimpse panel. */
 :root { --strip: 112px; }
 
 /* Text and links wrap to two rows on these screens, so the court leaves them room. */
@@ -37,11 +37,6 @@
 .tail { fill: none; stroke: var(--accent); stroke-width: 3px; vector-effect: non-scaling-stroke; stroke-linecap: round; }
 #trail { fill: none; stroke: var(--accent); stroke-width: 1.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
 #hits circle { fill: var(--accent); }
-.ring { fill: none; stroke: var(--accent); stroke-width: 2.5px; vector-effect: non-scaling-stroke; opacity: 0; }
-
-.shuttle__skirt { fill: var(--bg); stroke: var(--ink); stroke-width: 1.3; stroke-linejoin: round; }
-.shuttle__rib { fill: none; stroke: var(--ink); stroke-width: .75; opacity: .6; }
-.shuttle__cork { fill: var(--accent); }
 #shade { fill: var(--ink); opacity: .16; }
 #bbox { fill: none; stroke: var(--accent-2); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
 #tag { fill: var(--accent-2); font-family: var(--font-mono); font-weight: 500; }
@@ -134,7 +129,9 @@
 /* Where the shuttle goes next */
 .stops { position: relative; z-index: 5; background: var(--bg); }
 .stops__sticky { position: relative; display: flex; flex-direction: column; gap: 48px; padding: 72px var(--gutter); }
+.stops__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 24px; }
 .stops h2 { margin: 0; font: 600 clamp(2.6rem, 6.4vw, 6rem)/1 var(--font-display); letter-spacing: .005em; }
+.stops__more { min-height: 0; }
 .stops__list {
   margin: 0;
   padding: 0;
@@ -149,235 +146,9 @@
 .stop__dot { position: absolute; left: 0; top: -7px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink); }
 .stop h3 { margin: 0 0 8px; font: 600 clamp(1.2rem, 1.7vw, 1.6rem)/1.12 var(--font-display); }
 .stop p { margin: 0; color: var(--muted-text); }
-.stop-rank { position: relative; margin-top: 10px; }
-.stop-rank__n { display: block; font: 600 clamp(2.4rem, 3.6vw, 3.6rem)/1 var(--font-display); color: var(--accent-text); }
-.stop-rank__of { display: block; margin-top: 6px; max-width: 16ch; font: 500 .85rem/1.25 var(--font-mono); color: var(--muted-text); }
-.stop__q {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 1.5px solid var(--ink);
-  border-radius: 50%;
-  background: none;
-  color: var(--ink);
-  font: 600 1rem/1 var(--font-display);
-  cursor: pointer;
-}
-.stop__q .fact { right: 0; top: calc(100% + 8px); }
 .stops__flight { display: none; }
-.hop-ghost { fill: none; stroke: var(--line); stroke-width: 2; stroke-dasharray: 2 8; stroke-linecap: round; }
-.hop-live { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
 
-/* What have I built? The same cards fill this section and the glimpse panel. */
-.work { position: relative; z-index: 5; background: var(--bg); padding: clamp(56px, 9vh, 110px) var(--gutter) clamp(72px, 10vh, 120px); }
-.work h2 { margin: 0 0 clamp(28px, 4vh, 48px); font: 600 clamp(2.2rem, 6.4vw, 6rem)/1 var(--font-display); letter-spacing: .005em; }
-.cards {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-  gap: clamp(28px, 3.4vw, 44px) clamp(16px, 2.2vw, 32px);
-}
-.card { display: flex; flex-direction: column; min-width: 0; }
-.card__shot { position: relative; margin: 0 0 14px; aspect-ratio: 16 / 10; overflow: clip; background: var(--surface); border: 1px solid var(--line); }
-.card__shot img, .card__shot > svg { display: block; width: 100%; height: 100%; object-fit: cover; }
-.card__credit {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  padding: 2px 6px;
-  background: var(--bg);
-  color: var(--muted-text);
-  font: 500 .68rem/1.3 var(--font-mono);
-}
-
-/* Hovering a card locks the tracker onto it. */
-.card__shot::before, .card__shot::after {
-  position: absolute;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity .2s, transform .5s var(--ease-out);
-}
-.card__shot::before { content: ""; inset: 8px; border: 2px solid var(--accent-2); transform: scale(1.04); }
-.card__shot::after {
-  content: attr(data-track);
-  left: 8px;
-  top: 8px;
-  padding: 4px 7px;
-  background: var(--accent-2);
-  color: var(--bg);
-  font: 500 .72rem/1 var(--font-mono);
-  transform: translateY(6px);
-}
-.card:hover .card__shot::before, .card:focus-within .card__shot::before,
-.card:hover .card__shot::after, .card:focus-within .card__shot::after,
-.resume__page:hover .card__shot::before, .resume__page:focus-visible .card__shot::before,
-.resume__page:hover .card__shot::after, .resume__page:focus-visible .card__shot::after { opacity: 1; transform: none; }
-
-.card__badge { margin: 0 0 6px; color: var(--accent-2); font: 500 .8rem/1.3 var(--font-mono); }
-.card h3 { margin: 0 0 8px; font: 600 clamp(1.15rem, 1.5vw, 1.4rem)/1.14 var(--font-display); }
-.card__text { margin: 0; color: var(--muted-text); font-size: .98rem; line-height: 1.42; }
-.card__foot { margin-top: auto; padding-top: 10px; }
-.card__link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  color: var(--ink);
-  font-weight: 500;
-  text-decoration: underline;
-  text-decoration-color: var(--accent);
-  text-decoration-thickness: 2px;
-  text-underline-offset: .3em;
-}
-.card__link:hover { color: var(--accent-text); }
-.card__private { margin: 0; padding: 12px 0; color: var(--muted-text); font: 500 .8rem/1.35 var(--font-mono); }
-
-.diagram__bg { fill: var(--surface); }
-.diagram__box { fill: var(--bg); stroke: var(--ink); stroke-width: 1.5; }
-.diagram__out { fill: var(--accent); }
-.diagram__line { fill: none; stroke: var(--ink); stroke-width: 1.5; }
-.diagram__label { fill: var(--ink); font: 600 17px var(--font-display); text-anchor: middle; dominant-baseline: central; }
-.diagram__on-accent { fill: var(--on-accent); }
-.diagram__note { fill: var(--muted-text); font: 500 13px var(--font-mono); text-anchor: middle; }
-
-/* Resume: the page itself, laid on the court. It straightens up when someone reaches for it. */
-.resume {
-  position: relative;
-  z-index: 5;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, min(44vw, 540px));
-  align-items: center;
-  gap: clamp(28px, 5vw, 80px);
-  padding: clamp(56px, 9vh, 110px) var(--gutter);
-  overflow: clip;
-  background: var(--surface);
-}
-.resume h2 { margin: 0; font: 600 clamp(2.2rem, 6.4vw, 6rem)/1 var(--font-display); letter-spacing: .005em; }
-.resume__note { margin: .5em 0 0; color: var(--muted-text); font-size: clamp(1.05rem, 1.6vw, 1.35rem); line-height: 1.3; }
-.resume__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: clamp(18px, 3vh, 28px); }
-.resume__page { display: block; color: inherit; }
-.resume__sheet {
-  display: block;
-  margin: 0;
-  aspect-ratio: 612 / 660;
-  background: #fff;
-  transform: rotate(1.6deg);
-  transition: transform .6s var(--ease-out);
-}
-.resume__sheet img { object-position: top; }
-.resume__page:hover .resume__sheet, .resume__page:focus-visible .resume__sheet { transform: none; }
-
-/* What's next? The page inverts here, so the rally ends on a clear last shot. */
-.contact {
-  position: relative;
-  z-index: 5;
-  overflow: clip;
-  background: var(--ink);
-  color: var(--bg);
-}
-.contact :focus-visible { outline-color: var(--accent-on-ink); }
-.contact__inner {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: clamp(20px, 3.4vh, 36px);
-  min-height: calc(100svh - 72px);
-  padding: clamp(72px, 12vh, 140px) var(--gutter) clamp(48px, 7vh, 80px);
-}
-/* In the page's flow, beside the links and under the email, so it can't run behind any text. */
-.contact__end {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px clamp(24px, 4vw, 64px);
-}
-.contact__court {
-  flex: 0 1 min(44vw, 560px);
-  min-width: 240px;
-  height: auto;
-  margin-right: calc(var(--gutter) * -1);
-  margin-bottom: calc(clamp(48px, 7vh, 80px) * -1);
-  color: var(--muted-on-ink);
-  opacity: .35;
-  pointer-events: none;
-}
-.contact__court line, .contact__court rect { fill: none; stroke: currentColor; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
-.contact__title {
-  position: relative;
-  margin: 0;
-  font: 600 clamp(3.2rem, 13.4vw, 13rem)/.98 var(--font-display);
-  letter-spacing: .005em;
-}
-.contact__title .q { color: var(--accent-on-ink); }
-.contact__lead { position: relative; margin: 0; font-size: clamp(1.1rem, 1.8vw, 1.5rem); line-height: 1.3; }
-.contact__email {
-  position: relative;
-  align-self: flex-start;
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  color: inherit;
-  font: 500 clamp(1.25rem, 5.2vw, 4.4rem)/1.1 var(--font-display);
-  text-decoration: none;
-}
-.contact__email::after {
-  content: "";
-  display: block;
-  height: .06em;
-  min-height: 2px;
-  margin-top: .12em;
-  background: var(--accent-on-ink);
-  transform-origin: left;
-  transition: transform .6s var(--ease-out);
-}
-.contact__email:hover::after { transform: scaleX(.6); }
-.contact__links {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px clamp(20px, 3vw, 44px);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.contact__links a {
-  display: inline-flex;
-  align-items: center;
-  gap: .6em;
-  min-height: 44px;
-  color: inherit;
-  font-weight: 500;
-  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
-  text-decoration: none;
-}
-.contact__label {
-  text-decoration: underline;
-  text-decoration-color: var(--accent-on-ink);
-  text-decoration-thickness: 2px;
-  text-underline-offset: .3em;
-}
-.contact__handle { color: var(--muted-on-ink); font: 500 .85rem/1 var(--font-mono); }
-.foot {
-  position: relative;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  min-height: 72px;
-  padding: 16px var(--gutter);
-  background: var(--ink);
-  color: var(--muted-on-ink);
-  border-top: 1px solid var(--muted-on-ink);
-  font: 500 .85rem/1.3 var(--font-mono);
-}
-
-/* The glimpse panel. Without JavaScript the same links jump to the section above. */
+/* The glimpse panel. Without JavaScript the same links go to the projects. */
 .glimpse {
   position: fixed;
   inset: 0;
@@ -429,7 +200,7 @@
 .motion .hero { position: sticky; top: 0; height: 100svh; overflow: clip; }
 .motion .stops { height: 360vh; }
 .motion .stops__sticky { position: sticky; top: 0; height: 100svh; overflow: clip; justify-content: center; }
-.motion .stops__list { margin-top: 90px; }
+.motion .stops__list { margin-top: clamp(56px, 10vh, 90px); }
 .motion .stops__flight { display: block; position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 
 html:not(.js) .plan { display: none; }
@@ -439,6 +210,7 @@ html:not(.js) .court { background: var(--surface); }
 .js-wait .name__line, .js-wait .plan, .js-wait .who, .js-wait .rank, .js-wait .cta, .js-wait .social { visibility: hidden; }
 
 @media (max-width: 1000px) {
+  .stops__more { display: none; } /* no room on a pinned phone screen, and the menu goes to the same page */
   .stops h2 { font-size: clamp(2.2rem, 8.6vw, 4rem); }
   .stops__list { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: minmax(0, 1fr); border-top: 0; border-left: 2px solid var(--ink); gap: clamp(12px, 1.8vh, 30px); }
   .motion .stops__list { margin-top: 0; }
@@ -452,6 +224,17 @@ html:not(.js) .court { background: var(--surface); }
   .stop__q { top: -3px; bottom: auto; } /* beside the heading, clear of the rank row */
   .stop__q .fact { top: auto; bottom: calc(100% + 8px); }
   .stops__sticky { gap: 18px; padding-top: 18px; padding-bottom: 18px; }
+}
+
+/* A shorter phone still pins this section, so everything tightens up to fit its one screen. */
+@media (max-width: 1000px) and (max-height: 820px) {
+  .stops h2 { font-size: clamp(1.9rem, 7.6vw, 3rem); }
+  .stops__sticky { gap: 12px; padding-top: 12px; padding-bottom: 12px; }
+  .stops__list { gap: 8px; }
+  .stop h3 { font-size: 1.05rem; }
+  .stop p { font-size: .88rem; }
+  .stop-rank__n { font-size: 1.8rem; }
+  .stop-rank__of { font-size: .72rem; }
 }
 
 /* On a phone the next card peeking in already says "swipe". */
@@ -479,13 +262,10 @@ html:not(.js) .court { background: var(--surface); }
   .cta .btn { min-height: 44px; }
   .serve { left: 78%; top: 60.5%; width: 90px; height: 120px; margin: -60px 0 0 -45px; }
   .serve .fact { right: 20%; bottom: 100%; }
-  .resume { grid-template-columns: minmax(0, 1fr); }
-  .resume__sheet { aspect-ratio: 4 / 3; transform: rotate(.8deg); }
-  .contact__court { flex-basis: 100%; }
 }
 
 /* A short screen can't hold the whole court at once, so the hero simply scrolls. */
-@media ((max-aspect-ratio: 1/1) or (max-width: 760px)) and (max-height: 700px), (min-aspect-ratio: 1/1) and (min-width: 761px) and (max-height: 500px) {
+@media ((max-aspect-ratio: 1/1) or (max-width: 760px)) and (max-height: 720px), (min-aspect-ratio: 1/1) and (min-width: 761px) and (max-height: 500px) {
   .court { --w: calc(100vw - 2 * var(--gutter)); }
   .motion .runway, .motion .stops { height: auto; }
   .motion .hero { position: relative; height: auto; overflow: visible; }

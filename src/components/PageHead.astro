@@ -1,0 +1,35 @@
+---
+interface Props {
+  title: string;
+  eyebrow?: string;
+  /** Long titles, like project names, use a smaller size. */
+  compact?: boolean;
+  /** The journey page has its own flying shuttle. */
+  shuttle?: boolean;
+}
+
+const { title, eyebrow, compact = false, shuttle = true } = Astro.props;
+---
+
+<div class="head">
+  <div class="head__court">
+    <svg class="head__lines" viewBox="0 0 1340 610" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <line x1="0" y1="46" x2="1340" y2="46"></line>
+      <line x1="76" y1="0" x2="76" y2="610"></line>
+      <line x1="1264" y1="0" x2="1264" y2="610"></line>
+      <line x1="472" y1="0" x2="472" y2="610"></line>
+      <line x1="868" y1="0" x2="868" y2="610"></line>
+      <line x1="0" y1="305" x2="472" y2="305"></line>
+      <line x1="868" y1="305" x2="1340" y2="305"></line>
+    </svg>
+    {eyebrow && <p class="head__eyebrow">{eyebrow}</p>}
+    <h1 class:list={['head__title', { 'head__title--compact': compact }]} id="page-title">{title}</h1>
+    <span class="head__ground"></span>
+    {shuttle && (
+      <div class="head__landing" aria-hidden="true">
+        <span class="head__ring"></span>
+        <svg class="head__shuttle" viewBox="-20 -32 40 62" focusable="false"><use href="#shuttle-shape" transform="rotate(90)"></use></svg>
+      </div>
+    )}
+  </div>
+</div>

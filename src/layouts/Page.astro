@@ -1,0 +1,20 @@
+---
+import '../styles/pages.css';
+import ShuttleDefs from '../components/ShuttleDefs.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteNav from '../components/SiteNav.astro';
+import Base from './Base.astro';
+
+interface Props {
+  title: string;
+  description: string;
+}
+---
+
+<Base {...Astro.props}>
+  <slot name="head" slot="head" />
+  <SiteNav />
+  <ShuttleDefs />
+  <main id="main" tabindex="-1"><slot /></main>
+  <SiteFooter />
+</Base>

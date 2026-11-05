@@ -1,0 +1,45 @@
+---
+import PageHead from '../components/PageHead.astro';
+import Page from '../layouts/Page.astro';
+import { home, journey, profile } from '../lib/content';
+---
+
+<Page title={`Journey, ${profile.name}`} description={`${profile.name}'s path from Kolhapur to AI and machine learning: study, first real code, national ML challenges and research.`}>
+  <PageHead title={home.journeyHeading} shuttle={false} />
+  <section class="tl-wrap" aria-labelledby="page-title">
+    <ol class="tl">
+      {journey.map((stop, i) => {
+        const when = [stop.date, stop.place].filter(Boolean).join(' · ');
+        return (
+          <li class:list={['tl__stop', i % 2 ? 'tl__stop--right' : 'tl__stop--left']} data-smash={stop.smash ? '' : undefined}>
+            <span class="tl__dot"></span>
+            <div class="tl__card">
+              {when && <p class="tl__when">{when}</p>}
+              <h2>{stop.title}</h2>
+              <p class="tl__text">{stop.description}</p>
+              {stop.metric && (
+                <div class="stop-rank tl__rank">
+                  <span class="stop-rank__n" data-from={stop.metricFrom} data-to={stop.metric}>{stop.metric}</span>
+                  <span class="stop-rank__of">{stop.metricLabel}</span>
+                  {stop.fact && <button class="stop__q" type="button" data-curious aria-label={`Hidden fact: ${stop.fact}`}>?<span class="fact" aria-hidden="true">{stop.fact}</span></button>}
+                </div>
+              )}
+              {stop.linkHref && stop.linkLabel && <a class="btn btn--primary tl__link" href={stop.linkHref} data-magnetic>{stop.linkLabel}</a>}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+    <svg class="tl__flight" aria-hidden="true" focusable="false">
+      <ellipse class="ring" id="tl-ring" rx="30" ry="9"></ellipse>
+      <use id="tl-shuttle" href="#shuttle-shape"></use>
+    </svg>
+  </section>
+</Page>
+
+<script>
+  import { flyThroughJourney } from '../scripts/journey';
+  import { startPage } from '../scripts/page';
+
+  startPage(flyThroughJourney);
+</script>

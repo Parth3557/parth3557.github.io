@@ -528,6 +528,151 @@ describe('the public site', () => {
   });
 });
 
+describe('every public page', () => {
+  const PROJECTS = [
+    'multimodal-product-price-predictor',
+    'ai-powered-learning-path-generator',
+    'rag-ml-study-assistant',
+    'artifact-robust-gi-endoscopy-classifier',
+    'grassroots-football-talent-analytics',
+    'neuroscan-brain-tumor-mri-classifier',
+    'plant-growth-stage-classifier',
+    'english-coach',
+  ];
+  const PRIVATE = ['artifact-robust-gi-endoscopy-classifier', 'grassroots-football-talent-analytics'];
+  const ROUTES = ['/', '/journey', '/projects', '/about', '/experience', '/contact', ...PROJECTS.map((slug) => `/projects/${slug}`)];
+  const pagesByRoute = new Map<string, string>();
+
+  beforeAll(async () => {
+    for (const route of ROUTES) pagesByRoute.set(route, (await send(route)).text);
+  });
+
+  describe.each(ROUTES)('%s', (route) => {
+    const html = () => pagesByRoute.get(route) ?? '';
+
+    test('opens', async () => {
+      const reply = await send(route);
+      expect(reply.status).toBe(200);
+      expect(reply.headers['content-type']).toContain('text/html');
+    });
+
+    test('has one main heading, a title, a description and a canonical link', () => {
+      expect(html().match(/<h1\b/g)).toHaveLength(1);
+      expect(html()).toMatch(/<title>[^<]+<\/title>/);
+      expect(html()).toMatch(/<meta name="description" content="[^"]+"/);
+      expect(html()).toMatch(/<link rel="canonical" href="[^"]+"/);
+      expect(html()).toContain('<html lang="en"');
+      expect(html()).toContain('class="skip"');
+      expect(html()).toContain('id="main"');
+    });
+
+    test('headings never skip a level, so screen readers can follow the page', () => {
+      const levels = [...html().matchAll(/<h([1-6])\b/g)].map((match) => Number(match[1]));
+      expect(levels[0]).toBe(1);
+      levels.forEach((level, i) => {
+        if (i > 0) expect(level, `heading ${i + 1} of ${levels.length}: ${levels.join(' ')}`).toBeLessThanOrEqual(levels[i - 1] + 1);
+      });
+    });
+
+    test('shows no placeholder and no phone number', () => {
+      expect(html()).not.toMatch(/\bTODO\b/);
+      expect(html().replace(/<[^>]*>/g, ' ')).not.toMatch(/(?<![\d.])(?:\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}(?![\d.])/);
+    });
+
+    test('has no inline code, so the strict policy can hold', () => {
+      expect(html()).not.toMatch(/<script(?![^>]*\bsrc=)[^>]*>/);
+      expect(html()).not.toMatch(/<style\b/);
+      expect(html()).not.toMatch(/\sstyle="/);
+    });
+
+    test('has the shared menu and footer, and never links to the dashboard', () => {
+      expect(html()).toContain('class="nav"');
+      expect(html()).toContain('class="foot"');
+      expect(html()).not.toContain('/dashboard');
+      expect(html()).not.toContain('/keystatic');
+    });
+
+    test('every internal link and in-page anchor works', async () => {
+      const hrefs = new Set([...html().matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)].map((match) => match[1]));
+      for (const href of hrefs) {
+        if (/^(https:|mailto:)/.test(href)) continue;
+        if (href.startsWith('#')) {
+          expect(html(), href).toContain(`id="${href.slice(1)}"`);
+          continue;
+        }
+        const [path, anchor] = href.split('#');
+        const target = await send(path || '/');
+        expect(target.status, href).toBe(200);
+        if (anchor) expect(target.text, href).toContain(`id="${anchor}"`);
+      }
+    });
+
+    test('is counted as a real page by the visitor endpoint', async () => {
+      const before = await viewsToday();
+      expect((await postJson('/api/collect', { path: route })).status).toBe(204);
+      expect(await viewsToday()).toBe(before + 1);
+    });
+
+    test('is in the sitemap', async () => {
+      const sitemap = (await send('/sitemap-0.xml')).text;
+      expect(sitemap).toMatch(new RegExp(`<loc>[^<]*${route === '/' ? '/' : route}/?</loc>`));
+    });
+  });
+
+  test('every page has its own title', () => {
+    const titles = ROUTES.map((route) => pagesByRoute.get(route)?.match(/<title>([^<]+)<\/title>/)?.[1]);
+    expect(new Set(titles).size).toBe(ROUTES.length);
+  });
+
+  test.each(PRIVATE)('%s has the research label and no code link', (slug) => {
+    const html = pagesByRoute.get(`/projects/${slug}`) ?? '';
+    expect(html).toContain('Research · paper under review · code on request');
+    expect(html).not.toContain('View code');
+    // The footer's link to the GitHub profile is fine. A link into a repository is not.
+    expect(html).not.toMatch(/github\.com\/Parth3557\/[a-zA-Z0-9]/);
+  });
+
+  test.each(PROJECTS.filter((slug) => !PRIVATE.includes(slug)))('%s links to its code', (slug) => {
+    expect(pagesByRoute.get(`/projects/${slug}`)).toMatch(/href="https:\/\/github\.com\/Parth3557\/[^"]+"[^>]*>View code/);
+  });
+
+  test('the projects page lists every project, each linking to its own page', () => {
+    const html = pagesByRoute.get('/projects') ?? '';
+    for (const slug of PROJECTS) expect(html).toContain(`href="/projects/${slug}"`);
+    expect(html.match(/<li class="card"/g)).toHaveLength(8);
+    for (const label of ['GenAI / RAG', 'Computer Vision', 'Research', 'Android']) expect(html).toContain(label);
+  });
+
+  test('the journey page has all seven stops, the home page only its highlights', () => {
+    const journey = pagesByRoute.get('/journey') ?? '';
+    for (const title of ['Kolhapur: where curiosity started.', 'First real code in production.', 'Going deep into AI.', 'Smash: national stage.', 'Asking better questions.', 'Rally continues.', 'What&#39;s next?']) {
+      expect(journey).toContain(title);
+    }
+    expect(journey).toContain('href="/contact"');
+  });
+
+  test('the about page has the curiosity statement, education and certifications', () => {
+    const html = pagesByRoute.get('/about') ?? '';
+    for (const text of ['Curiosity is my biggest strength', 'Vellore Institute of Technology', 'Vivekanand College', '8.85/10', '8.63/10', 'Artificial Intelligence with Python', 'Introduction to Cybersecurity Tools']) {
+      expect(html).toContain(text);
+    }
+  });
+
+  test('the experience page has the internship, achievements, skills and the resume', () => {
+    const html = pagesByRoute.get('/experience') ?? '';
+    for (const text of ['Android Developer Intern', 'Dropout Technologies LLP', 'Amazon ML Challenge 2025', 'Amazon ML Challenge 2026', 'Dead ReLUs Society', 'Personalized AI Powered Learning Path Generator', 'Grad-CAM', 'href="/resume/resume.pdf"']) {
+      expect(html).toContain(text);
+    }
+  });
+
+  test('the contact page has the email and profile links', () => {
+    const html = pagesByRoute.get('/contact') ?? '';
+    expect(html).toContain('href="mailto:parth.jadhav.3557@gmail.com"');
+    expect(html).toContain('href="https://github.com/Parth3557"');
+    expect(html).toContain('https://www.linkedin.com/in/parth3557');
+  });
+});
+
 describe('the public resume', () => {
   const file = '/resume/resume.pdf';
 

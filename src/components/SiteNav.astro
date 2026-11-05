@@ -1,26 +1,41 @@
 ---
 import { home, profile } from '../lib/content';
 
-interface Props {
-  /** The 404 page links back to sections of the home page. */
-  from?: string;
-}
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const onHome = path === '/';
 
-const { from = '' } = Astro.props;
-const onHome = from === '';
+// The home page holds its own Resume and Contact sections, and Projects opens the glimpse panel there.
+const items = [
+  { label: 'Journey', href: '/journey' },
+  { label: 'Projects', href: '/projects', glimpse: onHome },
+  { label: 'About', href: '/about' },
+  { label: 'Experience', href: '/experience' },
+  ...(profile.resume ? [{ label: home.resumeHeading, href: onHome ? '#resume' : '/#resume' }] : []),
+  { label: 'Contact', href: onHome ? '#contact' : '/contact' },
+];
+
+const currentFor = (href: string) => {
+  if (href === path) return 'page';
+  return href.startsWith('/') && path.startsWith(`${href}/`) ? 'true' : undefined;
+};
 ---
 
 <header class="nav">
   <a class="nav__logo" href="/" aria-label="Parth Jadhav, home">PJ</a>
   <div class="nav__right">
-    <nav aria-label="Main">
+    <nav class="nav__wide" aria-label="Main">
       <ul class="nav__links">
-        <li><a href={`${from}#journey`}>Journey</a></li>
-        <li><a href={`${from}#projects`} data-glimpse={onHome ? '' : undefined}>Projects</a></li>
-        {profile.resume && <li><a href={`${from}#resume`}>{home.resumeHeading}</a></li>}
-        <li><a href={`${from}#contact`}>Contact</a></li>
+        {items.map((item) => <li><a href={item.href} data-glimpse={item.glimpse ? '' : undefined} aria-current={currentFor(item.href)}>{item.label}</a></li>)}
       </ul>
     </nav>
+    <details class="menu">
+      <summary class="menu__button"><span class="menu__open">Menu</span><span class="menu__close">Close</span></summary>
+      <nav class="menu__panel" aria-label="Main">
+        <ul>
+          {items.map((item) => <li><a href={item.href} data-glimpse={item.glimpse ? '' : undefined} aria-current={currentFor(item.href)}>{item.label}</a></li>)}
+        </ul>
+      </nav>
+    </details>
     <button class="toggle" type="button" data-theme-toggle aria-label="Switch colour theme">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"></path></svg>
     </button>

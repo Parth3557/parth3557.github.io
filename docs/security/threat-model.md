@@ -69,7 +69,7 @@ Fake visits can't be fully prevented: a determined attacker can imitate a browse
 
 | Threat | Defense |
 |---|---|
-| Tracking visitors | No cookies and no fingerprint kept. A daily visitor hash is salted with a random value that is deleted the next day, so visitors can't be linked across days or traced back |
+| Tracking visitors | No cookies and no fingerprint kept. A daily visitor hash is salted with a random value that is deleted the next day, so visitors can't be linked across days or traced back. The browser keeps only two small preferences that never leave it: the chosen theme, and for the current tab session, that the home page's intro has already played |
 | Storing personal data | Raw IP addresses and user agents are never stored. Only the path, referrer hostname, country code and device class are kept, as daily totals |
 | Ignoring opt-outs | Do Not Track and Global Privacy Control are honored in both the browser and the server |
 

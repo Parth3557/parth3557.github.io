@@ -1,15 +1,15 @@
 ---
 import '../styles/home.css';
+import ContactSection from '../components/ContactSection.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import ResumeSection from '../components/ResumeSection.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import SiteNav from '../components/SiteNav.astro';
 import Base from '../layouts/Base.astro';
 import { heroAchievement, home, journeyOnHome, profile, projects } from '../lib/content';
 
 const [firstName, ...others] = profile.name.split(' ');
 const lastName = others.join(' ');
-const handleOf = (url: string) => new URL(url).pathname.replace(/^\/(in\/)?/, '').replace(/\/$/, '');
-const heading = home.contactHeading.replace(/\?$/, '');
-const resumeFileName = `${profile.name.replace(/\s+/g, '_')}_Resume.pdf`;
 ---
 
 <Base title={`${profile.name}, ${profile.title}`} description={profile.bio}>
@@ -98,7 +98,10 @@ const resumeFileName = `${profile.name.replace(/\s+/g, '_')}_Resume.pdf`;
 
     <section class="stops" id="journey" tabindex="-1" aria-labelledby="journey-title">
       <div class="stops__sticky">
-        <h2 id="journey-title">{home.journeyHeading}</h2>
+        <div class="stops__head">
+          <h2 id="journey-title">{home.journeyHeading}</h2>
+          <a class="card__link stops__more" href="/journey">The whole journey</a>
+        </div>
         <ol class="stops__list">
           {journeyOnHome.map((stop) => (
             <li class="stop" data-smash={stop.smash ? '' : undefined}>
@@ -129,52 +132,14 @@ const resumeFileName = `${profile.name.replace(/\s+/g, '_')}_Resume.pdf`;
       <ul class="cards">
         {projects.map((project, i) => <ProjectCard project={project} position={i + 1} />)}
       </ul>
+      <p class="work__more"><a class="card__link" href="/projects">Filter them by category</a></p>
     </section>
 
-    {profile.resume && (
-      <section class="resume" id="resume" tabindex="-1" aria-labelledby="resume-title">
-        <div class="resume__text">
-          <h2 id="resume-title">{home.resumeHeading}</h2>
-          {home.resumeNote && <p class="resume__note">{home.resumeNote}</p>}
-          <div class="resume__actions">
-            <a class="btn btn--primary" href={profile.resume} download={resumeFileName} data-magnetic>Download PDF</a>
-            <a class="btn" href={profile.resume} target="_blank" rel="noopener" data-magnetic>Open in a new tab</a>
-          </div>
-        </div>
-        {profile.resumePreview && (
-          <a class="resume__page" href={profile.resume} target="_blank" rel="noopener">
-            <span class="resume__sheet card__shot" data-track="resume id:01">
-              <img src={profile.resumePreview} width="960" height="1242" loading="lazy" decoding="async" alt={`First page of ${profile.name}'s resume. Opens the full PDF.`} />
-            </span>
-          </a>
-        )}
-      </section>
-    )}
-
-    <section class="contact" id="contact" tabindex="-1" aria-labelledby="contact-title">
-      <div class="contact__inner">
-        <h2 class="contact__title" id="contact-title">{heading}{home.contactHeading.endsWith('?') && <span class="q">?</span>}</h2>
-        <p class="contact__lead" data-reveal>{profile.availability}</p>
-        <a class="contact__email" href={`mailto:${profile.email}`} data-reveal>{profile.email}</a>
-        <div class="contact__end">
-          <ul class="contact__links" data-reveal>
-            <li><a href={profile.githubUrl} target="_blank" rel="me noopener"><span class="contact__label">GitHub</span> <span class="contact__handle">{handleOf(profile.githubUrl)}</span></a></li>
-            <li><a href={profile.linkedinUrl} target="_blank" rel="me noopener"><span class="contact__label">LinkedIn</span> <span class="contact__handle">{handleOf(profile.linkedinUrl)}</span></a></li>
-          </ul>
-          <svg class="contact__court" viewBox="0 0 670 305" aria-hidden="true" focusable="false">
-            <rect x="1" y="1" width="668" height="303"></rect>
-            <line x1="1" y1="24" x2="669" y2="24"></line>
-            <line x1="1" y1="281" x2="669" y2="281"></line>
-            <line x1="39" y1="1" x2="39" y2="304"></line>
-            <line x1="236" y1="1" x2="236" y2="304"></line>
-            <line x1="39" y1="152" x2="236" y2="152"></line>
-          </svg>
-        </div>
-      </div>
-    </section>
+    <ResumeSection />
+    <ContactSection />
   </main>
 
-  <footer class="foot">{home.footerNote}</footer>
+  <SiteFooter />
 
   <dialog class="glimpse" id="glimpse" aria-labelledby="glimpse-title" data-lenis-prevent>
     <div class="glimpse__shade"></div>

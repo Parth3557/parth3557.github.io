@@ -4,11 +4,13 @@
  */
 import { CustomEase, ScrollTrigger, SplitText, fontsReady, fullMotion, gsap, startSmoothScroll, whenVisible } from '../lib/motion';
 import type { Lenis } from '../lib/motion';
+import { setupAnchors } from './anchors';
 import { startPointerEffects } from './chrome';
+import { setupMenu } from './menu';
 import { themeToggle } from './theme-toggle';
 
 const PORTRAIT = '(max-aspect-ratio: 1/1), (max-width: 760px)';
-const SHORT = '((max-aspect-ratio: 1/1) or (max-width: 760px)) and (max-height: 700px), (min-aspect-ratio: 1/1) and (min-width: 761px) and (max-height: 500px)';
+const SHORT = '((max-aspect-ratio: 1/1) or (max-width: 760px)) and (max-height: 720px), (min-aspect-ratio: 1/1) and (min-width: 761px) and (max-height: 500px)';
 const REDUCED = '(prefers-reduced-motion: reduce)';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const HOOK = 'M36 176C36 88 94 32 166 32 240 32 288 86 288 152 288 214 248 248 208 282 176 310 160 340 160 392L160 452';
@@ -171,19 +173,23 @@ function setupGlimpse(page: Page) {
   }, { passive: false, signal });
 }
 
-/** In-page links glide with the smooth scroller, and move focus so keyboard users land there too. */
-function setupAnchors(page: Page) {
-  document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]:not([data-glimpse]):not([data-glimpse-all])').forEach((link) => {
-    link.addEventListener('click', (event) => {
-      const target = document.getElementById(link.hash.slice(1));
-      const lenis = page.lenis();
-      if (!target || !lenis) return;
-      event.preventDefault();
-      page.finishIntro();
-      lenis.scrollTo(target, { duration: 1.4 });
-      target.focus({ preventScroll: true });
-    }, { signal: page.signal });
-  });
+const INTRO_SEEN = 'pj_intro_seen';
+
+/** The rally plays once a visit, so coming back from another page doesn't make anyone sit through it again. */
+function introSeen(): boolean {
+  try {
+    return sessionStorage.getItem(INTRO_SEEN) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function rememberIntro(): void {
+  try {
+    sessionStorage.setItem(INTRO_SEEN, '1');
+  } catch {
+    // Storage can be refused. The rally just plays again next time.
+  }
 }
 
 const nextFrame = () => new Promise<void>((resolve) => {
@@ -225,6 +231,8 @@ async function setupScroll(page: Page, pos: { y: number; angle: number }, draw: 
   await nextFrame();
   if (signal.aborted) return;
   ctx.add(() => {
+    const homeCards = document.querySelector('.work__more');
+    if (homeCards) gsap.from(homeCards, { y: 18, autoAlpha: 0, duration: 0.8, ease: 'expo.out', scrollTrigger: { trigger: homeCards, start: 'top 94%', once: true } });
     if (!document.querySelector('.resume')) return;
     gsap.from('.resume__text > *', {
       y: 22,
@@ -257,7 +265,7 @@ async function setupScroll(page: Page, pos: { y: number; angle: number }, draw: 
       stagger: 0.022,
       scrollTrigger: { trigger: '.contact', start: 'top 74%', once: true },
     });
-    gsap.from('.contact [data-reveal]', {
+    gsap.from('.contact [data-reveal-contact]', {
       y: 22,
       autoAlpha: 0,
       duration: 0.8,
@@ -669,6 +677,7 @@ function start(firstRun: boolean): () => void {
   };
 
   themeToggle(signal);
+  setupMenu(signal);
   setupGlimpse(page);
 
   root.dataset.ready = '1';
@@ -706,7 +715,7 @@ function start(firstRun: boolean): () => void {
     smooth = startSmoothScroll();
     const { lenis } = smooth;
     ctx.add(() => startPointerEffects(signal));
-    setupAnchors(page);
+    setupAnchors(signal, page.lenis, () => page.finishIntro());
 
     let scrollReady = false;
     const onScrollReady = (pos: { y: number; angle: number }, draw: () => void) => {
@@ -744,12 +753,14 @@ function start(firstRun: boolean): () => void {
         if (intro.isActive() && scrollY > 2) intro.progress(1);
       });
 
-      // After a resize or a deep link, the page is already in its final state.
-      if (!firstRun || jumpTarget) {
+      // After a resize, a deep link or a return visit, the page is already in its final state.
+      if (!firstRun || jumpTarget || introSeen()) {
         intro.progress(1);
       } else {
         void whenVisible().then(() => {
-          if (!signal.aborted) intro.play();
+          if (signal.aborted) return;
+          intro.play();
+          rememberIntro();
         });
       }
     });

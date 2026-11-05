@@ -1,0 +1,92 @@
+---
+import MultimodalDiagram from '../../components/MultimodalDiagram.astro';
+import PageHead from '../../components/PageHead.astro';
+import Page from '../../layouts/Page.astro';
+import { pages, profile, projects } from '../../lib/content';
+import { CATEGORIES, neighbours, PRIVATE_PROJECT_LABEL, published } from '../../lib/content-rules';
+
+export function getStaticPaths() {
+  return projects.map((project, i) => ({ params: { slug: project.slug }, props: { project, position: i + 1 } }));
+}
+
+const { project, position } = Astro.props;
+const { previous, next } = neighbours(projects, project.slug);
+const track = `project id:${String(position).padStart(2, '0')}`;
+const category = CATEGORIES.find((item) => item.value === project.category)?.label;
+const problem = published(project.problem);
+const approach = published(project.approach);
+---
+
+<Page title={`${project.title}, ${profile.name}`} description={project.summary}>
+  <link slot="head" rel="expect" href="#project-hero" blocking="render" />
+  <PageHead title={project.title} eyebrow={`${track} · ${category}`} compact />
+
+  <div class="project__top">
+    <div class="project__intro">
+      <p class="card__badge">{project.badge}</p>
+      <p class="project__summary">{project.summary}</p>
+      <div class="project__links">
+        {!project.isPrivate && project.repoUrl && <a class="btn btn--primary" href={project.repoUrl} target="_blank" rel="noopener" data-magnetic>View code</a>}
+        {project.isPrivate && <p class="project__private">{PRIVATE_PROJECT_LABEL}</p>}
+        {project.isPrivate && <a class="btn" href="/contact" data-magnetic>Ask about it</a>}
+      </div>
+    </div>
+    <figure class="project__cover card__shot" id="project-hero" data-cover-hero data-track={track}>
+      {project.coverImage && <img src={project.coverImage} width="1280" height="800" decoding="async" fetchpriority="high" alt={project.coverAlt} />}
+      {!project.coverImage && project.coverDiagram === 'multimodal' && <MultimodalDiagram label={project.coverAlt} />}
+      {project.coverCredit && <figcaption class="card__credit">{project.coverCredit}</figcaption>}
+    </figure>
+  </div>
+
+  <div class="page-body">
+    {problem && (
+      <section class="sec" data-reveal aria-labelledby="problem-title">
+        <h2 id="problem-title">{pages.problemHeading}</h2>
+        <p class="sec__lead">{problem}</p>
+      </section>
+    )}
+    {approach && (
+      <section class="sec" data-reveal aria-labelledby="approach-title">
+        <h2 id="approach-title">{pages.approachHeading}</h2>
+        <p class="sec__text">{approach}</p>
+      </section>
+    )}
+    {project.pipeline.length > 1 && (
+      <section class="sec" data-reveal aria-labelledby="pipeline-title">
+        <h2 id="pipeline-title">{pages.pipelineHeading}</h2>
+        <ol class="flow">
+          {project.pipeline.map((step) => <li>{step}</li>)}
+        </ol>
+      </section>
+    )}
+    {project.results.length > 0 && (
+      <section class="sec" data-reveal aria-labelledby="results-title">
+        <h2 id="results-title">{pages.resultsHeading}</h2>
+        <ul class="results">
+          {project.results.map((result) => <li>{result}</li>)}
+        </ul>
+      </section>
+    )}
+    {project.tech.length > 0 && (
+      <section class="sec" data-reveal aria-labelledby="tech-title">
+        <h2 id="tech-title">{pages.techHeading}</h2>
+        <ul class="chips">
+          {project.tech.map((item) => <li class="chip">{item}</li>)}
+        </ul>
+      </section>
+    )}
+  </div>
+
+  {previous && next && (
+    <nav class="pager" aria-label="More projects">
+      <a class="pager__link" href={`/projects/${previous.slug}`}><span>Previous</span>{previous.title}</a>
+      <a class="pager__link pager__link--next" href={`/projects/${next.slug}`}><span>Next</span>{next.title}</a>
+    </nav>
+  )}
+</Page>
+
+<script>
+  import { startPage } from '../../scripts/page';
+
+  startPage();
+</script>

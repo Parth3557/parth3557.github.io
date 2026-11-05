@@ -6,24 +6,26 @@ import MultimodalDiagram from './MultimodalDiagram.astro';
 interface Props {
   project: (typeof projects)[number];
   position: number;
+  /** The projects page has no section heading above its cards, so they sit one level higher there. */
+  heading?: 'h2' | 'h3';
 }
 
-const { project, position } = Astro.props;
+const { project, position, heading: Heading = 'h3' } = Astro.props;
 const track = `project id:${String(position).padStart(2, '0')}`;
 ---
 
-<li class="card">
-  <figure class="card__shot" data-track={track}>
+<li class="card" data-category={project.category}>
+  <figure class="card__shot" data-track={track} data-cover={project.slug}>
     {project.coverImage && <img src={project.coverImage} width="1280" height="800" loading="lazy" decoding="async" alt={project.coverAlt} />}
     {!project.coverImage && project.coverDiagram === 'multimodal' && <MultimodalDiagram label={project.coverAlt} />}
     {project.coverCredit && <figcaption class="card__credit">{project.coverCredit}</figcaption>}
   </figure>
   <p class="card__badge">{project.badge}</p>
-  <h3>{project.title}</h3>
+  <Heading class="card__title">{project.title}</Heading>
   <p class="card__text">{project.summary}</p>
   <div class="card__foot">
-    {project.isPrivate
-      ? <p class="card__private">{PRIVATE_PROJECT_LABEL}</p>
-      : project.repoUrl && <a class="card__link" href={project.repoUrl} target="_blank" rel="noopener">View code<span class="sr-only"> for {project.title}</span></a>}
+    <a class="card__link card__more" href={`/projects/${project.slug}`}>Read more<span class="sr-only"> about {project.title}</span></a>
+    {!project.isPrivate && project.repoUrl && <a class="card__link card__code" href={project.repoUrl} target="_blank" rel="noopener">View code<span class="sr-only"> for {project.title}</span></a>}
+    {project.isPrivate && <p class="card__private">{PRIVATE_PROJECT_LABEL}</p>}
   </div>
 </li>
