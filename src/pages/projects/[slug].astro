@@ -28,7 +28,7 @@ const approach = published(project.approach);
       <div class="project__links">
         {!project.isPrivate && project.repoUrl && <a class="btn btn--primary" href={project.repoUrl} target="_blank" rel="noopener" data-magnetic>View code</a>}
         {project.isPrivate && <p class="project__private">{PRIVATE_PROJECT_LABEL}</p>}
-        {project.isPrivate && <a class="btn" href="/contact" data-magnetic>Ask about it</a>}
+        {project.isPrivate && <a class="btn" href="/contact/" data-magnetic>Ask about it</a>}
       </div>
     </div>
     <figure class="project__cover card__shot" id="project-hero" data-cover-hero data-track={track}>
@@ -79,8 +79,8 @@ const approach = published(project.approach);
 
   {previous && next && (
     <nav class="pager" aria-label="More projects">
-      <a class="pager__link" href={`/projects/${previous.slug}`}><span>Previous</span>{previous.title}</a>
-      <a class="pager__link pager__link--next" href={`/projects/${next.slug}`}><span>Next</span>{next.title}</a>
+      <a class="pager__link" href={`/projects/${previous.slug}/`}><span>Previous</span>{previous.title}</a>
+      <a class="pager__link pager__link--next" href={`/projects/${next.slug}/`}><span>Next</span>{next.title}</a>
     </nav>
   )}
 </Page>

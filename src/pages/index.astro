@@ -100,7 +100,7 @@ const lastName = others.join(' ');
       <div class="stops__sticky">
         <div class="stops__head">
           <h2 id="journey-title">{home.journeyHeading}</h2>
-          <a class="card__link stops__more" href="/journey">The whole journey</a>
+          <a class="card__link stops__more" href="/journey/">The whole journey</a>
         </div>
         <ol class="stops__list">
           {journeyOnHome.map((stop) => (
@@ -132,7 +132,7 @@ const lastName = others.join(' ');
       <ul class="cards">
         {projects.map((project, i) => <ProjectCard project={project} position={i + 1} />)}
       </ul>
-      <p class="work__more"><a class="card__link" href="/projects">Filter them by category</a></p>
+      <p class="work__more"><a class="card__link" href="/projects/">Filter them by category</a></p>
     </section>
 
     <ResumeSection />

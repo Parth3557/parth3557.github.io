@@ -6,17 +6,18 @@ const onHome = path === '/';
 
 // The home page holds its own Resume and Contact sections, and Projects opens the glimpse panel there.
 const items = [
-  { label: 'Journey', href: '/journey' },
-  { label: 'Projects', href: '/projects', glimpse: onHome },
-  { label: 'About', href: '/about' },
-  { label: 'Experience', href: '/experience' },
+  { label: 'Journey', href: '/journey/' },
+  { label: 'Projects', href: '/projects/', glimpse: onHome },
+  { label: 'About', href: '/about/' },
+  { label: 'Experience', href: '/experience/' },
   ...(profile.resume ? [{ label: home.resumeHeading, href: onHome ? '#resume' : '/#resume' }] : []),
-  { label: 'Contact', href: onHome ? '#contact' : '/contact' },
+  { label: 'Contact', href: onHome ? '#contact' : '/contact/' },
 ];
 
 const currentFor = (href: string) => {
-  if (href === path) return 'page';
-  return href.startsWith('/') && path.startsWith(`${href}/`) ? 'true' : undefined;
+  const page = href.replace(/\/$/, '');
+  if (page === path) return 'page';
+  return href.startsWith('/') && path.startsWith(`${page}/`) ? 'true' : undefined;
 };
 ---
 

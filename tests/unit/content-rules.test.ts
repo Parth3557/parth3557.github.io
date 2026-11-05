@@ -1,5 +1,25 @@
 import { describe, expect, test } from 'vitest';
-import { byOrder, categoriesWithCounts, featuredProjects, findTodoFields, isHttpsUrl, isSafeHref, neighbours, projectsInCategory, published, publicRepoUrl } from '../../src/lib/content-rules';
+import { byOrder, categoriesWithCounts, featuredProjects, findTodoFields, isHttpsUrl, isSafeHref, neighbours, pageHref, projectsInCategory, published, publicRepoUrl } from '../../src/lib/content-rules';
+
+describe('pageHref: a link written in the content goes straight to the page, with no redirect', () => {
+  test.each([
+    ['/contact', '/contact/'],
+    ['/contact/', '/contact/'],
+    ['/', '/'],
+    ['/projects/english-coach', '/projects/english-coach/'],
+    ['/projects?category=research', '/projects/?category=research'],
+    ['/contact#email', '/contact/#email'],
+    ['/#resume', '/#resume'],
+    ['/resume/resume.pdf', '/resume/resume.pdf'],
+    ['/images/a.webp', '/images/a.webp'],
+    ['https://example.com/page', 'https://example.com/page'],
+    ['mailto:someone@example.com', 'mailto:someone@example.com'],
+    ['#contact', '#contact'],
+    ['', ''],
+  ])('%s becomes %s', (value, expected) => {
+    expect(pageHref(value)).toBe(expected);
+  });
+});
 
 describe('published: a placeholder never reaches a page', () => {
   test('passes real text through', () => {

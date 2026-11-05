@@ -2,6 +2,7 @@
 import PageHead from '../components/PageHead.astro';
 import Page from '../layouts/Page.astro';
 import { home, journey, profile } from '../lib/content';
+import { pageHref } from '../lib/content-rules';
 ---
 
 <Page title={`Journey, ${profile.name}`} description={`${profile.name}'s path from Kolhapur to AI and machine learning: study, first real code, national ML challenges and research.`}>
@@ -24,7 +25,7 @@ import { home, journey, profile } from '../lib/content';
                   {stop.fact && <button class="stop__q" type="button" data-curious aria-label={`Hidden fact: ${stop.fact}`}>?<span class="fact" aria-hidden="true">{stop.fact}</span></button>}
                 </div>
               )}
-              {stop.linkHref && stop.linkLabel && <a class="btn btn--primary tl__link" href={stop.linkHref} data-magnetic>{stop.linkLabel}</a>}
+              {stop.linkHref && stop.linkLabel && <a class="btn btn--primary tl__link" href={pageHref(stop.linkHref)} data-magnetic>{stop.linkLabel}</a>}
             </div>
           </li>
         );

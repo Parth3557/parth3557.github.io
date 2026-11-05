@@ -711,6 +711,13 @@ describe('every public page', () => {
       expect(html()).not.toContain('Built with curiosity');
     });
 
+    test('links straight to each page\'s final address, so GitHub Pages never has to redirect', () => {
+      const paths = [...html().matchAll(/<a\b[^>]*\bhref="(\/[^"#?]*)/g)].map((match) => match[1]);
+      const pages = paths.filter((path) => !/\.[a-z0-9]+$/i.test(path));
+      expect(pages.length).toBeGreaterThan(0);
+      expect(pages.filter((path) => !path.endsWith('/'))).toEqual([]);
+    });
+
     test('every internal link and in-page anchor works', async () => {
       const hrefs = new Set([...html().matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)].map((match) => match[1]));
       for (const href of hrefs) {
@@ -757,7 +764,7 @@ describe('every public page', () => {
 
   test('the projects page lists every project, each linking to its own page', () => {
     const html = pagesByRoute.get('/projects') ?? '';
-    for (const slug of PROJECTS) expect(html).toContain(`href="/projects/${slug}"`);
+    for (const slug of PROJECTS) expect(html).toContain(`href="/projects/${slug}/"`);
     expect(html.match(/<li class="card"/g)).toHaveLength(8);
     for (const label of ['GenAI / RAG', 'Computer Vision', 'Research', 'Android']) expect(html).toContain(label);
   });
@@ -767,7 +774,7 @@ describe('every public page', () => {
     for (const title of ['Kolhapur: where curiosity started.', 'First real code in production.', 'Going deep into AI.', 'Smash: national stage.', 'Asking better questions.', 'Rally continues.', 'What&#39;s next?']) {
       expect(journey).toContain(title);
     }
-    expect(journey).toContain('href="/contact"');
+    expect(journey).toContain('href="/contact/"');
   });
 
   test('the about page has the curiosity statement, education and certifications', () => {

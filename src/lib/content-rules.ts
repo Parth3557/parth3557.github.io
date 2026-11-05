@@ -17,6 +17,13 @@ export function isSafeHref(value: string): boolean {
   return /^\/(?![/\\])/.test(value) || isHttpsUrl(value);
 }
 
+/** GitHub Pages redirects /contact to /contact/, so a page link goes straight there. Files and other sites stay as written. */
+export function pageHref(href: string): string {
+  const [, path, rest] = href.match(/^(\/[^?#]*)(.*)$/) ?? [];
+  if (!path || path.endsWith('/') || /\.[a-z0-9]+$/i.test(path)) return href;
+  return `${path}/${rest}`;
+}
+
 export const CATEGORIES = [
   { value: 'genai', label: 'GenAI / RAG' },
   { value: 'vision', label: 'Computer Vision' },
