@@ -1,0 +1,32 @@
+---
+import { count } from '../../lib/dashboard-format';
+
+interface Props {
+  title: string;
+  items: Array<{ name: string; views: number }>;
+  empty: string;
+}
+
+const { title, items, empty } = Astro.props;
+const top = Math.max(1, ...items.map((item) => item.views));
+---
+
+<div class="ranked">
+  <h3>{title}</h3>
+  {items.length === 0 && <p class="ranked__none">{empty}</p>}
+  {items.length > 0 && (
+    <ol>
+      {items.map((item) => (
+        <li>
+          <span class="ranked__name">{item.name}</span>
+          <span class="ranked__value">{count(item.views)}</span>
+          <!-- Rounded at the data end and square at the baseline, using attributes only so the strict CSP holds. -->
+          <svg class="ranked__bar" aria-hidden="true" focusable="false">
+            <rect width={`${(item.views / top) * 100}%`} height="8" rx="4"></rect>
+            <rect width="4" height="8"></rect>
+          </svg>
+        </li>
+      ))}
+    </ol>
+  )}
+</div>

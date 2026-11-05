@@ -1,0 +1,36 @@
+---
+import CourtLines from '../../components/dashboard/CourtLines.astro';
+import Private from '../../layouts/Private.astro';
+
+export const prerender = false;
+---
+
+<Private title="Set up a passkey">
+  <div class="auth">
+    <header class="dash-top">
+      <a class="nav__logo" href="/" aria-label="Back to the public site">PJ</a>
+      <button class="toggle" type="button" data-theme-toggle aria-label="Switch colour theme">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"></path></svg>
+      </button>
+    </header>
+    <main id="main" tabindex="-1" class="auth__stage">
+      <div class="auth__card">
+        <CourtLines />
+        <h1 class="auth__title">Add this device.</h1>
+        <div data-with-token hidden>
+          <p class="auth__text">Your device will ask for your fingerprint, face or PIN. They stay on the device and never reach this site.</p>
+          <form class="dash-field" data-setup>
+            <label>Name this passkey<input name="label" maxlength="40" autocomplete="off" required placeholder="My laptop" /></label>
+            <button class="btn btn--primary" type="submit">Create passkey</button>
+          </form>
+        </div>
+        <p class="auth__text" data-without-token>This page needs a one-time link. Run <code>npm run dashboard:setup</code> in your terminal to get one.</p>
+        <p class="dash-alert" role="alert" data-alert hidden></p>
+      </div>
+    </main>
+  </div>
+</Private>
+
+<script>
+  import '../../scripts/setup';
+</script>

@@ -1,0 +1,15 @@
+/* The way back from the content editor. The editor styles everything else itself. */
+.editor-back {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  padding: 10px 14px;
+  border-radius: 4px;
+  background: #1C1B19;
+  color: #F5F2EC;
+  font: 500 14px/1 system-ui, sans-serif;
+  text-decoration: none;
+}
+.editor-back:hover { background: #B23D18; }
+.editor-back:focus-visible { outline: 2px solid #B23D18; outline-offset: 3px; }

@@ -1,0 +1,69 @@
+---
+import { chartGeometry, shortDay, type DayCount } from '../../lib/chart';
+import { count, plural } from '../../lib/dashboard-format';
+
+interface Props {
+  series: DayCount[];
+  days: number;
+}
+
+const { series, days } = Astro.props;
+const chart = chartGeometry(series);
+const middle = Math.round((series.length - 1) / 2);
+const peakDay = chart.points.find((point) => point.visitors === chart.peak);
+
+// Only dates and numbers go in here. The hover script writes them with textContent.
+const hoverData = JSON.stringify(chart.points.map((point) => ({
+  label: shortDay(point.day),
+  visitors: point.visitors,
+  views: point.views,
+  x: point.x / chart.width,
+  y: point.y / chart.height,
+})));
+const description = chart.empty
+  ? `Visitors per day for the last ${days} days. No visitors yet.`
+  : `Visitors per day for the last ${days} days. The busiest day was ${shortDay(peakDay!.day)}, with ${plural(chart.peak, 'visitor')}. Use the left and right arrow keys to read each day.`;
+---
+
+<figure class="chart">
+  <figcaption class="chart__title">Visitors per day</figcaption>
+  <div class="chart__frame">
+    <div class="chart__y" aria-hidden="true">
+      {chart.ticks.map((tick) => <span>{count(tick)}</span>)}
+    </div>
+    <div class="chart__plot" data-chart data-points={hoverData} tabindex="0" role="img" aria-label={description}>
+      <svg viewBox={`0 0 ${chart.width} ${chart.height}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <line class="chart__grid" x1="0" y1="0" x2={chart.width} y2="0"></line>
+        <line class="chart__grid" x1="0" y1={chart.height / 2} x2={chart.width} y2={chart.height / 2}></line>
+        <line class="chart__grid" x1="0" y1={chart.height} x2={chart.width} y2={chart.height}></line>
+        <path class="chart__area" d={chart.area}></path>
+        <path class="chart__line" d={chart.line}></path>
+      </svg>
+      <div class="chart__cross" hidden></div>
+      <div class="chart__dot" hidden></div>
+      <div class="chart__tip" role="status" hidden>
+        <strong data-tip-visitors></strong>
+        <span data-tip-views></span>
+        <span class="chart__tip-day" data-tip-day></span>
+      </div>
+      {chart.empty && <p class="chart__empty">No visitors in this range yet.</p>}
+    </div>
+    <div class="chart__x" aria-hidden="true">
+      <span>{shortDay(series[0].day)}</span>
+      <span>{shortDay(series[middle].day)}</span>
+      <span>{shortDay(series[series.length - 1].day)}</span>
+    </div>
+  </div>
+</figure>
+
+<details class="dash-details">
+  <summary>Show the numbers</summary>
+  <table class="dash-table">
+    <thead><tr><th scope="col">Day</th><th scope="col" class="num">Visitors</th><th scope="col" class="num">Page views</th></tr></thead>
+    <tbody>
+      {[...series].reverse().map((point) => (
+        <tr><td>{shortDay(point.day)}</td><td class="num">{count(point.visitors)}</td><td class="num">{count(point.views)}</td></tr>
+      ))}
+    </tbody>
+  </table>
+</details>

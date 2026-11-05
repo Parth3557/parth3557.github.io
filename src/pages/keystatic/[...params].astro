@@ -1,0 +1,27 @@
+---
+import '../../styles/editor.css';
+import { ownerSession } from '../../lib/server/http';
+
+export const prerender = false;
+
+// The middleware already checked this. Protected pages check again, so one mistake can't expose them.
+if (!(await ownerSession(Astro))) return Astro.redirect('/dashboard/login', 303);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Content editor</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div id="editor"></div>
+    <a class="editor-back" href="/dashboard">Back to dashboard</a>
+    <script>
+      import '../../scripts/editor';
+    </script>
+  </body>
+</html>

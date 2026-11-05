@@ -1,0 +1,167 @@
+---
+import CourtLines from '../../components/dashboard/CourtLines.astro';
+import RankedList from '../../components/dashboard/RankedList.astro';
+import VisitorChart from '../../components/dashboard/VisitorChart.astro';
+import Private from '../../layouts/Private.astro';
+import { achievements, certifications, contentTodos, education, experience, journey, profile, projects, skills } from '../../lib/content';
+import { count, countryName, greetingFor, pageName, plural, rangeFrom, RANGES, when } from '../../lib/dashboard-format';
+import { editorLink, editsGoToGitHub } from '../../lib/editor-links';
+import { listCredentials, recentAudit } from '../../lib/server/enrollment';
+import { ownerSession } from '../../lib/server/http';
+import { getDb } from '../../lib/server/runtime';
+import { listSessions } from '../../lib/server/sessions';
+import { readStats } from '../../lib/server/visits';
+
+export const prerender = false;
+
+// The middleware already checked this. Protected pages check again, so one mistake can't expose them.
+const session = await ownerSession(Astro);
+if (!session) return Astro.redirect('/dashboard/login', 303);
+
+const db = await getDb();
+const days = rangeFrom(Astro.url.searchParams.get('days'));
+const now = Date.now();
+const [stats, credentials, sessions, activity] = await Promise.all([readStats(db, days, now), listCredentials(db), listSessions(db, now), recentAudit(db)]);
+
+const firstName = profile.name.split(' ')[0];
+const topSource = stats.referrers[0]?.name;
+const summary = [
+  stats.today.visitors === 0 ? 'No visitors yet today.' : `${plural(stats.today.views, 'page view')} today.`,
+  topSource ? `Your top source lately is ${topSource}.` : '',
+].filter(Boolean).join(' ');
+
+const todos = contentTodos();
+const manage = [
+  { label: 'Profile', note: 'Name, bio, links, photo, resume', path: 'singleton/profile' },
+  { label: 'Home page', note: 'Statement and headings', path: 'singleton/home' },
+  { label: 'Projects', note: plural(projects.length, 'project'), path: 'collection/projects' },
+  { label: 'Journey', note: plural(journey.length, 'stop'), path: 'collection/journey' },
+  { label: 'Achievements', note: plural(achievements.length, 'entry').replace('entrys', 'entries'), path: 'collection/achievements' },
+  { label: 'Experience', note: plural(experience.length, 'role'), path: 'collection/experience' },
+  { label: 'Education', note: plural(education.length, 'degree'), path: 'collection/education' },
+  { label: 'Skills', note: plural(skills.length, 'group'), path: 'collection/skills' },
+  { label: 'Certifications', note: plural(certifications.length, 'certificate'), path: 'collection/certifications' },
+  { label: 'About page', note: 'Story and values', path: 'singleton/about' },
+  { label: 'Site settings', note: 'Animations on or off', path: 'singleton/theme' },
+];
+---
+
+<Private title="Dashboard">
+  <header class="dash-top">
+    <a class="nav__logo" href="/" aria-label="Back to the public site">PJ</a>
+    <div class="dash-top__right">
+      <a class="dash-link" href="/">View site</a>
+      <button class="toggle" type="button" data-theme-toggle aria-label="Switch colour theme">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M12 2.5a9.5 9.5 0 0 1 0 19z" fill="currentColor"></path></svg>
+      </button>
+      <form method="post" action="/api/auth/logout"><button class="btn btn--small" type="submit">Sign out</button></form>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="dash-court" aria-labelledby="greeting">
+      <CourtLines />
+      <div class="dash-court__body">
+        <div>
+          <h1 class="dash-greeting" id="greeting">{greetingFor(now)}, {firstName}.</h1>
+          <p class="dash-summary">{summary}</p>
+        </div>
+        <p class="dash-today m-0">
+          <span class="dash-today__value">{count(stats.today.visitors)}</span>
+          <span class="dash-today__label">visitors today</span>
+        </p>
+      </div>
+    </section>
+
+    <section class="dash-section" aria-labelledby="visitors-title">
+      <div class="dash-section__head">
+        <h2 class="dash-heading" id="visitors-title">Who's visiting</h2>
+        <ul class="dash-range" aria-label="Time range">
+          {RANGES.map((range) => <li><a href={`/dashboard?days=${range}`} aria-current={range === days ? 'true' : undefined}>{range} days</a></li>)}
+        </ul>
+      </div>
+      <dl class="dash-tiles">
+        <div class="dash-tile"><dt>Daily visitors, added up</dt><dd>{count(stats.totals.visitors)}</dd></div>
+        <div class="dash-tile"><dt>Page views</dt><dd>{count(stats.totals.views)}</dd></div>
+      </dl>
+      <p class="dash-note">Someone who comes back on another day counts again, because nothing links a visitor from one day to the next. Bots, people asking not to be tracked, and this browser aren't counted.</p>
+      <VisitorChart series={stats.series} days={days} />
+      <div class="dash-ranked">
+        <RankedList title="Where they came from" items={stats.referrers} empty="No other sites have sent visitors yet." />
+        <RankedList title="Countries" items={stats.countries.map((item) => ({ ...item, name: countryName(item.name) }))} empty={editsGoToGitHub ? 'No countries yet.' : 'Countries appear on the live site. This local copy has no location data.'} />
+        <RankedList title="Devices" items={stats.devices.map((item) => ({ ...item, name: item.name[0].toUpperCase() + item.name.slice(1) }))} empty="No visits yet." />
+        <RankedList title="Pages" items={stats.pages.map((item) => ({ ...item, name: pageName(item.name) }))} empty="No visits yet." />
+      </div>
+    </section>
+
+    <section class="dash-section" aria-labelledby="manage-title">
+      <div class="dash-section__head"><h2 class="dash-heading" id="manage-title">Manage your portfolio</h2></div>
+      <p class="dash-note">
+        {editsGoToGitHub
+          ? 'Saving an edit commits it to GitHub, and the live site updates about a minute later.'
+          : 'This local copy saves edits to the files in content/. Run npm run build and restart to see them here.'}
+      </p>
+      <ul class="dash-manage">
+        {manage.map((item) => <li><a href={editorLink(item.path)}><strong>{item.label}</strong><span>{item.note}</span></a></li>)}
+      </ul>
+      {todos.length > 0 && (
+        <details class="dash-details">
+          <summary>{plural(todos.length, 'thing')} left to fill in</summary>
+          <ul class="dash-todos">
+            {todos.map((todo) => <li><a class="dash-link" href={editorLink(todo.path)}>{todo.text}</a></li>)}
+          </ul>
+        </details>
+      )}
+    </section>
+
+    <section class="dash-section" aria-labelledby="security-title">
+      <div class="dash-section__head"><h2 class="dash-heading" id="security-title">Security</h2></div>
+      <div class="dash-security">
+        <div>
+          <h3>Passkeys</h3>
+          <ul class="dash-rows">
+            {credentials.map((credential) => (
+              <li>
+                <span>{credential.label}<small>Added {when(credential.createdAt)}{credential.lastUsedAt && `, last used ${when(credential.lastUsedAt)}`}</small></span>
+                {credentials.length > 1 && session.fresh && <button class="btn btn--small" type="button" data-remove-passkey={credential.id} data-label={credential.label}>Remove</button>}
+              </li>
+            ))}
+          </ul>
+          {credentials.length === 1 && <p class="dash-note">Add a second passkey, like your phone, so losing this device can't lock you out.</p>}
+          {session.fresh
+            ? (
+              <form class="dash-field" data-add-passkey>
+                <label>Name for a new passkey<input name="label" maxlength="40" autocomplete="off" required placeholder="My phone" /></label>
+                <button class="btn btn--small" type="submit">Add passkey</button>
+              </form>
+            )
+            : <p class="dash-note">For safety, adding or removing a passkey needs a sign-in from the last 10 minutes. Sign out and back in to change them.</p>}
+          <p class="dash-alert" role="alert" data-passkey-alert hidden></p>
+        </div>
+        <div>
+          <h3>Signed-in devices</h3>
+          <ul class="dash-rows">
+            {sessions.map((item) => (
+              <li><span>{item.device[0].toUpperCase() + item.device.slice(1)}{item.idHash === session.idHash && ' (this one)'}<small>Signed in {when(item.createdAt)}</small></span></li>
+            ))}
+          </ul>
+          <form method="post" action="/api/auth/logout" class="mt-3.5">
+            <input type="hidden" name="scope" value="everywhere" />
+            <button class="btn btn--small" type="submit">Sign out everywhere</button>
+          </form>
+        </div>
+        <div>
+          <h3>Recent activity</h3>
+          <ul class="dash-rows">
+            {activity.map((entry) => <li><span>{entry.event}<small>{when(entry.at)}, {entry.device}</small></span></li>)}
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="dash-foot">Only you can see this page. It isn't linked from your site or listed for search engines.</footer>
+</Private>
+
+<script>
+  import '../../scripts/dashboard';
+</script>
