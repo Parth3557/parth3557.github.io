@@ -299,7 +299,6 @@
 .foot__links { display: flex; flex-wrap: wrap; gap: 0 clamp(14px, 2vw, 26px); margin: 0; padding: 0; list-style: none; }
 .foot__links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--bg); text-decoration: none; }
 .foot__links a:hover { text-decoration: underline; text-decoration-color: var(--accent-on-ink); text-underline-offset: .3em; }
-.foot__note { margin: 0; padding: 12px 0; }
 
 @media (max-aspect-ratio: 1/1), (max-width: 760px) {
   .resume { grid-template-columns: minmax(0, 1fr); }

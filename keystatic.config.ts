@@ -51,7 +51,6 @@ export default config({
         resumeHeading: fields.text({ label: 'Resume heading' }),
         resumeNote: fields.text({ label: 'Resume note' }),
         contactHeading: fields.text({ label: 'Contact heading' }),
-        footerNote: fields.text({ label: 'Footer note' }),
       },
     }),
     pages: singleton({

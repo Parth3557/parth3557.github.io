@@ -67,7 +67,6 @@ export const home = single('home', z.object({
   resumeHeading: z.string().min(1),
   resumeNote: text,
   contactHeading: z.string().min(1),
-  footerNote: text,
 }));
 
 const heading = z.string().min(1);

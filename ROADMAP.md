@@ -26,7 +26,7 @@ Estimated total: 8 phases, about 6–10 Claude Code sessions.
 - [ ] Add `@astrojs/vercel` adapter, `@astrojs/react`, `@astrojs/markdoc`, `@astrojs/sitemap`
 - [ ] Base layout: `<head>` SEO component (title, description, Open Graph image, canonical), fonts self-hosted, theme toggle (no flash on load)
 - [ ] Global tokens as CSS custom properties, mapped into the Tailwind config
-- [ ] Header (logo "PJ" monogram, nav, theme toggle), footer (socials, "Built with curiosity in Kolhapur")
+- [ ] Header (logo "PJ" monogram, nav, theme toggle), footer (socials)
 - [ ] Empty routes: `/`, `/journey`, `/projects`, `/about`, `/experience`, `/contact`, `404`
 - [ ] Push to `Parth3557/portfolio`, connect the repo to Vercel, confirm preview + production deploys
 - [ ] `.gitignore`, `.env.example`, README for the repo

@@ -592,6 +592,13 @@ describe('every public page', () => {
       expect(html()).not.toContain('/keystatic');
     });
 
+    test('the footer holds only links, with no closing line', () => {
+      const footer = html().match(/<footer class="foot"[^>]*>([\s\S]*?)<\/footer>/)?.[1];
+      expect(footer).toContain('GitHub');
+      expect(footer).not.toMatch(/<p\b/);
+      expect(html()).not.toContain('Built with curiosity');
+    });
+
     test('every internal link and in-page anchor works', async () => {
       const hrefs = new Set([...html().matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)].map((match) => match[1]));
       for (const href of hrefs) {
