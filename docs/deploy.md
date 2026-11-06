@@ -33,7 +33,7 @@ Copy the database URL (it starts with `libsql://`) and the token. Keep the token
 
 ## 3. Create the Vercel project
 
-Import the repository in Vercel and name the project `parth3557`, which gives it the address above. If you use another name, update it in `.env.example` and in step 4.
+Import the repository in Vercel. Vercel suggests the project name `parth3557-github-io`, which gives it a longer address. Either change the name to `parth3557` before deploying, or afterwards add `parth3557.vercel.app` under **Settings > Domains**. Passkeys and the origin checks are tied to `SITE_ORIGIN`, so the address must match it exactly.
 
 Add these environment variables before the first deploy:
 
